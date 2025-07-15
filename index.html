@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Original Playlist Finder</title>
+  <style>
+    body { background-color: #121212; color: white; font-family: Arial, sans-serif; padding: 2rem; }
+    input, button { font-size: 1rem; margin: 0.5rem 0; padding: 0.5rem; width: 100%; max-width: 500px; }
+    button { background-color: #1db954; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #14833b; }
+    #output { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>🎵 Original Playlist Finder</h1>
+  <p>Incolla il link di una playlist modificata di Spotify e trova le canzoni originali.</p>
+
+  <input id="playlistUrl" placeholder="Incolla il link della playlist Spotify modificata" />
+  <button onclick="login()">Login con Spotify</button>
+  <button onclick="findOriginals()" disabled id="findBtn">Trova canzoni originali</button>
+
+  <div id="output"></div>
+
+  <script>
+    const clientId = "162bcf77cc254ffaa8426ef1001c1f7f";
+    const redirectUri = "https://<TUO_USERNAME>.github.io/";
+    let accessToken = null;
+
+    function login() {
+      const scopes = "playlist-read-private playlist-modify-private playlist-modify-public";
+      const authEndpoint = "https://accounts.spotify.com/authorize";
+      const url = `${authEndpoint}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
+      window.location = url;
+    }
+
+    function getTokenFromUrl() {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      return params.get("access_token");
+    }
+
+    function findOriginals() {
+      const playlistUrl = document.getElementById("playlistUrl").value;
+      if (!playlistUrl.includes("/playlist/")) {
+        alert("URL non valido. Assicurati che sia una playlist Spotify.");
+        return;
+      }
+      document.getElementById("output").innerText = "Funzionalità in sviluppo... (non ancora collegata a Spotify API)";
+    }
+
+    window.onload = () => {
+      accessToken = getTokenFromUrl();
+      if (accessToken) {
+        document.getElementById("findBtn").disabled = false;
+        document.getElementById("output").innerText = "Login effettuato. Ora incolla la playlist.";
+      }
+    };
+  </script>
+</body>
+</html>
