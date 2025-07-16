@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Login Spotify</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #181818;
+      color: white;
+      text-align: center;
+      padding-top: 5rem;
+    }
+    button {
+      font-size: 1.2rem;
+      padding: 1rem 2rem;
+      background-color: #1db954;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 Test Login con Spotify</h1>
+  <button onclick="login()">Login con Spotify</button>
+
+  <script>
+    const clientId = "162bcf77cc254ffaa8426ef1001c1f7f";
+    const redirectUri = "https://buub05.github.io/PlaylistFinder/";
+    const scope = "playlist-read-private playlist-modify-private";
+
+    function login() {
+      const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&show_dialog=true`;
+      console.log("Redirecting to:", url);
+      window.location.href = url;
+    }
+  </script>
+</body>
+</html>
