@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spotify Playlist - Filtri avanzati</title>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    button {
+      background-color: #1db954;
+      color: white;
+      font-size: 1rem;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 1rem;
+    }
+    select, input[type=range] {
+      margin: 0.5rem;
+      padding: 0.4rem;
+    }
+    .filter-block {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎧 Filtri Avanzati per Playlist</h1>
+
+  <div>
+    <label>🎵 Link della playlist: <br>
+      <input type="text" id="playlistLink" style="width: 90%; padding: 0.6rem;" />
+    </label>
+  </div>
+
+  <div class="filter-block">
+    <h3>🎚️ Acousticness</h3>
+    <select id="acousticFilter">
+      <option value="none">Nessun filtro</option>
+      <option value="with">Con</option>
+      <option value="without">Senza</option>
+      <option value="only">Solo</option>
+    </select>
+  </div>
+
+  <div class="filter-block">
+    <h3>🎼 Instrumentalness</h3>
+    <select id="instrumentalFilter">
+      <option value="none">Nessun filtro</option>
+      <option value="with">Con</option>
+      <option value="without">Senza</option>
+      <option value="only">Solo</option>
+    </select>
+  </div>
+
+  <div class="filter-block">
+    <h3>📊 Popularità minima</h3>
+    <input type="range" min="0" max="100" value="50" id="popularityRange" />
+    <span id="popularityValue">50</span>+
+  </div>
+
+  <div style="margin-top: 2rem;">
+    <button onclick="alert('🚧 Integrazione filtri in arrivo...')">🔍 Applica filtri e crea playlist</button>
+  </div>
+
+  <script>
+    document.getElementById("popularityRange").oninput = function () {
+      document.getElementById("popularityValue").textContent = this.value;
+    };
+  </script>
+</body>
+</html>
