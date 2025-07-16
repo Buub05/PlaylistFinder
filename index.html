@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spotify Playlist Finder</title>
+  <title>Playlist Originale Spotify</title>
   <style>
     body {
       background: #121212;
@@ -36,15 +36,15 @@
   </style>
 </head>
 <body>
-  <h1>🔐 Login con Spotify</h1>
+  <h1>🎧 Trova le versioni originali</h1>
   <button onclick="login()">Login con Spotify</button>
   <pre id="tokenOutput">🔃 In attesa di login...</pre>
 
   <div id="playlist-tools" style="margin-top: 2rem;">
-    <h2>🎵 Analizza una playlist modificata</h2>
+    <h2>🔗 Inserisci la playlist modificata</h2>
     <input type="text" id="playlistLink" placeholder="Incolla qui il link della playlist" />
     <br />
-    <button onclick="fetchPlaylist()">Trova originali</button>
+    <button onclick="processPlaylist()">🎯 Crea playlist originale</button>
   </div>
 
   <script>
@@ -113,7 +113,7 @@
       }
     }
 
-    async function fetchPlaylist() {
+    async function processPlaylist() {
       const tokenOutput = document.getElementById("tokenOutput").textContent;
       let tokenData;
       try {
@@ -124,7 +124,7 @@
       }
       const accessToken = tokenData.access_token;
       if (!accessToken) {
-        alert("Token non trovato. Fai login.");
+        alert("Token non valido. Riprova il login.");
         return;
       }
 
@@ -136,14 +136,62 @@
       }
       const playlistId = match[1];
 
-      const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
+      const playlistResp = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
       });
-      const data = await response.json();
-      console.log("🎵 Tracce trovate:", data);
-      alert(`🎧 Tracce trovate: ${data.items.length}`);
+      const playlistInfo = await playlistResp.json();
+      const name = playlistInfo.name;
+
+      const tracksResp = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const tracks = await tracksResp.json();
+      const originalUris = [];
+
+      for (const item of tracks.items) {
+        const name = item.track.name;
+        const artist = item.track.artists[0].name;
+        const query = encodeURIComponent(`track:${name} artist:${artist}`);
+        const searchResp = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const searchData = await searchResp.json();
+        if (searchData.tracks && searchData.tracks.items.length > 0) {
+          originalUris.push(searchData.tracks.items[0].uri);
+        }
+      }
+
+      const meResp = await fetch("https://api.spotify.com/v1/me", {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const me = await meResp.json();
+
+      const createResp = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: "Originale - " + name,
+          public: false
+        })
+      });
+      const newPlaylist = await createResp.json();
+
+      for (let i = 0; i < originalUris.length; i += 100) {
+        const batch = originalUris.slice(i, i + 100);
+        await fetch(`https://api.spotify.com/v1/playlists/${newPlaylist.id}/tracks`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ uris: batch })
+        });
+      }
+
+      alert("✅ Playlist originale creata con successo!");
     }
 
     window.onload = handleRedirect;
