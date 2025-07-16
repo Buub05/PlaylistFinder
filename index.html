@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spotify Login (PKCE)</title>
+  <title>Spotify Playlist Finder</title>
   <style>
     body {
       background: #121212;
@@ -22,6 +22,11 @@
       cursor: pointer;
       margin: 1rem;
     }
+    input {
+      width: 90%;
+      padding: 0.6rem;
+      margin-top: 1rem;
+    }
     pre {
       background: #1e1e1e;
       padding: 1rem;
@@ -31,9 +36,16 @@
   </style>
 </head>
 <body>
-  <h1>🔐 Login con Spotify (PKCE)</h1>
+  <h1>🔐 Login con Spotify</h1>
   <button onclick="login()">Login con Spotify</button>
   <pre id="tokenOutput">🔃 In attesa di login...</pre>
+
+  <div id="playlist-tools" style="margin-top: 2rem;">
+    <h2>🎵 Analizza una playlist modificata</h2>
+    <input type="text" id="playlistLink" placeholder="Incolla qui il link della playlist" />
+    <br />
+    <button onclick="fetchPlaylist()">Trova originali</button>
+  </div>
 
   <script>
     const clientId = "162bcf77cc254ffaa8426ef1001c1f7f";
@@ -94,12 +106,44 @@
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body
         });
-
         const data = await response.json();
         document.getElementById("tokenOutput").textContent = JSON.stringify(data, null, 2);
       } catch (err) {
-        document.getElementById("tokenOutput").textContent = "❌ Errore durante la richiesta del token.";
+        document.getElementById("tokenOutput").textContent = "❌ Errore durante il recupero del token.";
       }
+    }
+
+    async function fetchPlaylist() {
+      const tokenOutput = document.getElementById("tokenOutput").textContent;
+      let tokenData;
+      try {
+        tokenData = JSON.parse(tokenOutput);
+      } catch (e) {
+        alert("Devi prima effettuare il login.");
+        return;
+      }
+      const accessToken = tokenData.access_token;
+      if (!accessToken) {
+        alert("Token non trovato. Fai login.");
+        return;
+      }
+
+      const playlistUrl = document.getElementById("playlistLink").value.trim();
+      const match = playlistUrl.match(/playlist\/([a-zA-Z0-9]+)/);
+      if (!match) {
+        alert("Link non valido.");
+        return;
+      }
+      const playlistId = match[1];
+
+      const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      const data = await response.json();
+      console.log("🎵 Tracce trovate:", data);
+      alert(`🎧 Tracce trovate: ${data.items.length}`);
     }
 
     window.onload = handleRedirect;
