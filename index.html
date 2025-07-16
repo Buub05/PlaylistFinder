@@ -2,90 +2,41 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Original Playlist Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Login Spotify</title>
   <style>
     body {
-      background-color: #121212;
+      font-family: sans-serif;
+      background: #181818;
       color: white;
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-    }
-    input, button {
-      font-size: 1rem;
-      margin: 0.5rem 0;
-      padding: 0.5rem;
-      width: 100%;
-      max-width: 500px;
+      text-align: center;
+      padding-top: 5rem;
     }
     button {
+      font-size: 1.2rem;
+      padding: 1rem 2rem;
       background-color: #1db954;
       color: white;
       border: none;
+      border-radius: 5px;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #14833b;
-    }
-    #output {
-      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>🎵 Original Playlist Finder</h1>
-  <p>Incolla il link di una playlist modificata di Spotify e trova le canzoni originali.</p>
-
-  <input id="playlistUrl" placeholder="Incolla il link della playlist Spotify modificata" />
+  <h1>🔐 Test Login con Spotify</h1>
   <button onclick="login()">Login con Spotify</button>
-  <button onclick="findOriginals()" disabled id="findBtn">Trova canzoni originali</button>
-
-  <div id="output"></div>
 
   <script>
     const clientId = "162bcf77cc254ffaa8426ef1001c1f7f";
     const redirectUri = "https://buub05.github.io/PlaylistFinder/";
-    const scope = "playlist-read-private playlist-modify-private playlist-modify-public";
-    let accessToken = null;
+    const scope = "playlist-read-private playlist-modify-private";
 
     function login() {
-      const playlistInput = document.getElementById("playlistUrl").value;
-      if (playlistInput) {
-        localStorage.setItem("playlistUrl", playlistInput);
-      }
-      const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=token&show_dialog=true`;
-      window.location.href = authUrl;
+      const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&show_dialog=true`;
+      console.log("Redirecting to:", url);
+      window.location.href = url;
     }
-
-    function getTokenFromUrl() {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      return params.get("access_token");
-    }
-
-    function findOriginals() {
-      const playlistUrl = document.getElementById("playlistUrl").value;
-      if (!playlistUrl.includes("/playlist/")) {
-        alert("URL non valido. Assicurati che sia una playlist Spotify.");
-        return;
-      }
-      document.getElementById("output").innerText = "🎧 Funzionalità in sviluppo... (simulazione di estrazione)";
-    }
-
-    window.onload = () => {
-      accessToken = getTokenFromUrl();
-
-      if (accessToken) {
-        history.replaceState(null, "", window.location.pathname); // Rimuove access_token dall'URL
-        document.getElementById("findBtn").disabled = false;
-        document.getElementById("output").innerText = "✅ Login effettuato! Ora puoi cercare le canzoni originali.";
-      }
-
-      const savedUrl = localStorage.getItem("playlistUrl");
-      if (savedUrl) {
-        document.getElementById("playlistUrl").value = savedUrl;
-      }
-    };
   </script>
 </body>
 </html>
