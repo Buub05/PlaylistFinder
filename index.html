@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="it">
+<!DOCTYPE html>
+<html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -6,7 +7,7 @@
   <style>
     body {
       background-color: #121212;
-      color: #fff;
+      color: white;
       font-family: sans-serif;
       padding: 2rem;
       text-align: center;
@@ -29,64 +30,75 @@
   </style>
 </head>
 <body>
-  <h1>🎵 Playlist Spotify Filtrata</h1>
-  <button onclick="login()">🔐 Login con Spotify</button>  <div style="margin-top: 2rem">
-    <label><input type="radio" name="mode" value="fromPlaylist" checked onchange="toggleMode()" /> Usa una playlist esistente</label><br />
+  <h1>🎧 Playlist Spotify Filtrata</h1>
+  <button onclick="login()">🔐 Login con Spotify</button>
+
+  <div style="margin-top: 2rem;">
+    <label><input type="radio" name="mode" value="fromPlaylist" checked onchange="toggleMode()" /> Usa una playlist esistente</label><br/>
     <label><input type="radio" name="mode" value="fromScratch" onchange="toggleMode()" /> Crea playlist da zero</label>
-  </div>  <div id="playlistInputBlock">
-    <input type="text" id="playlistLink" placeholder="Incolla qui il link della playlist modificata" style="width: 80%;" />
-  </div>  <div class="filter-block">
+  </div>
+
+  <div id="playlistInputBlock">
+    <input type="text" id="playlistLink" placeholder="Link della playlist modificata" style="width: 80%;" />
+  </div>
+
+  <div class="filter-block">
     <h3>Acousticness</h3>
     <select id="acousticnessFilter">
       <option value="none">Nessun filtro</option>
       <option value="with">Con</option>
       <option value="without">Senza</option>
       <option value="only">Solo</option>
-    </select><h3>Instrumentalness</h3>
-<select id="instrumentalnessFilter">
-  <option value="none">Nessun filtro</option>
-  <option value="with">Con</option>
-  <option value="without">Senza</option>
-  <option value="only">Solo</option>
-</select>
+    </select>
 
-<h3>Danceability</h3>
-<select id="danceabilityFilter">
-  <option value="none">Nessun filtro</option>
-  <option value="with">Con</option>
-  <option value="without">Senza</option>
-  <option value="only">Solo</option>
-</select>
+    <h3>Instrumentalness</h3>
+    <select id="instrumentalnessFilter">
+      <option value="none">Nessun filtro</option>
+      <option value="with">Con</option>
+      <option value="without">Senza</option>
+      <option value="only">Solo</option>
+    </select>
 
-<h3>Energy</h3>
-<select id="energyFilter">
-  <option value="none">Nessun filtro</option>
-  <option value="with">Con</option>
-  <option value="without">Senza</option>
-  <option value="only">Solo</option>
-</select>
+    <h3>Danceability</h3>
+    <select id="danceabilityFilter">
+      <option value="none">Nessun filtro</option>
+      <option value="with">Con</option>
+      <option value="without">Senza</option>
+      <option value="only">Solo</option>
+    </select>
 
-<h3>Valence (emozione)</h3>
-<select id="valenceFilter">
-  <option value="none">Nessun filtro</option>
-  <option value="with">Con</option>
-  <option value="without">Senza</option>
-  <option value="only">Solo</option>
-</select>
+    <h3>Energy</h3>
+    <select id="energyFilter">
+      <option value="none">Nessun filtro</option>
+      <option value="with">Con</option>
+      <option value="without">Senza</option>
+      <option value="only">Solo</option>
+    </select>
 
-<h3>Durata massima (minuti)</h3>
-<input type="number" id="durationLimit" min="1" max="15" value="5" />
+    <h3>Valence (emozione)</h3>
+    <select id="valenceFilter">
+      <option value="none">Nessun filtro</option>
+      <option value="with">Con</option>
+      <option value="without">Senza</option>
+      <option value="only">Solo</option>
+    </select>
 
-<h3>Popolarità minima</h3>
-<input type="range" id="popularityRange" min="0" max="100" value="50" oninput="document.getElementById('popVal').textContent = this.value" />
-<span id="popVal">50</span>+
+    <h3>Durata massima (minuti)</h3>
+    <input type="number" id="durationLimit" min="1" max="15" value="5" />
 
-<h3>Genere (opzionale)</h3>
-<input type="text" id="genreField" placeholder="es: rock, pop" />
+    <h3>Popolarità minima</h3>
+    <input type="range" id="popularityRange" min="0" max="100" value="50" oninput="document.getElementById('popVal').textContent = this.value" />
+    <span id="popVal">50</span>+
 
-  </div>  <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🌟 Crea playlist filtrata</button>
-  </div>  <script>
+    <h3>Genere (opzionale)</h3>
+    <input type="text" id="genreField" placeholder="es: rock, pop" />
+  </div>
+
+  <div style="margin-top: 2rem;">
+    <button onclick="startProcessing()">🎯 Crea playlist filtrata</button>
+  </div>
+
+  <script>
     const clientId = "162bcf77cc254ffaa8426ef1001c1f7f";
     const redirectUri = "https://buub05.github.io/PlaylistFinder/";
     const scope = "playlist-read-private playlist-modify-private playlist-modify-public user-read-private";
@@ -98,19 +110,83 @@
 
     function login() {
       const verifier = [...Array(128)].map(() => Math.random().toString(36)[2]).join('');
-      localStorage.setItem("code_verifier", verifier);
+      localStorage.setItem("verifier", verifier);
       const encoder = new TextEncoder();
       crypto.subtle.digest("SHA-256", encoder.encode(verifier)).then(hash => {
-        const challenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
-          .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+        const challenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
         const url = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&code_challenge_method=S256&code_challenge=${challenge}`;
         window.location.href = url;
       });
     }
 
-    // Le funzioni di token exchange, API Spotify e filtraggio andranno qui
-    function startProcessing() {
-      alert("🚀 Sto completando la logica per collegare ai filtri Spotify e creare la playlist filtrata...");
+    async function getTokenFromCode() {
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (!code) return null;
+      const verifier = localStorage.getItem("verifier");
+      const body = new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        code_verifier: verifier,
+      });
+      const res = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body
+      });
+      const data = await res.json();
+      localStorage.setItem("access_token", data.access_token);
+      return data.access_token;
     }
-  </script></body>
+
+    async function startProcessing() {
+      let token = localStorage.getItem("access_token");
+      if (!token) {
+        token = await getTokenFromCode();
+        if (!token) return alert("Autenticazione richiesta.");
+      }
+
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      if (mode === "fromPlaylist") {
+        const playlistUrl = document.getElementById("playlistLink").value;
+        const playlistId = playlistUrl.split("/playlist/")[1]?.split("?")[0];
+        const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        const trackIds = json.items.map(item => item.track.id).filter(Boolean);
+        const featuresRes = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.slice(0,100).join(",")}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const features = await featuresRes.json();
+        const filtered = features.audio_features.filter(f => f && f.popularity >= document.getElementById("popularityRange").value);
+        const newPlaylistRes = await fetch("https://api.spotify.com/v1/me", { headers: { Authorization: `Bearer ${token}` } });
+        const user = await newPlaylistRes.json();
+        const createRes = await fetch(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ name: "Playlist filtrata", public: false })
+        });
+        const playlist = await createRes.json();
+        await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ uris: filtered.map(f => "spotify:track:" + f.id) })
+        });
+        alert("✅ Playlist creata con successo!");
+      } else {
+        alert("🚧 Modalità da zero in fase di completamento...");
+      }
+    }
+
+    // Avvia auto-login se torna dal redirect
+    (async () => {
+      if (new URLSearchParams(window.location.search).get("code")) {
+        await getTokenFromCode();
+        window.history.replaceState({}, document.title, "/");
+      }
+    })();
+  </script>
+</body>
 </html>
