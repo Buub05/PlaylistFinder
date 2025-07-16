@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="it">
+<!DOCTYPE html>
+<html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,14 +34,18 @@
 </head>
 <body>
   <h1>🎧 Trova le versioni originali</h1>
-  <button onclick="login()">Login con Spotify</button>  <div id="playlist-tools" style="margin-top: 2rem; display: none;">
+  <button onclick="login()">Login con Spotify</button>
+
+  <div id="playlist-tools" style="margin-top: 2rem; display: none;">
     <h2>🔗 Inserisci la playlist modificata</h2>
     <input type="text" id="playlistLink" placeholder="Incolla qui il link della playlist" />
     <br />
     <label><input type="checkbox" id="filterAcoustic" checked /> Ignora versioni acustiche/piano</label>
     <br />
     <button onclick="processPlaylist()">🎯 Crea playlist originale</button>
-  </div>  <script>
+  </div>
+
+  <script>
     const clientId = "162bcf77cc254ffaa8426ef1001c1f7f";
     const redirectUri = "https://buub05.github.io/PlaylistFinder/";
     const scope = "playlist-read-private playlist-modify-private playlist-modify-public";
@@ -169,6 +174,7 @@
     }
 
     window.onload = handleRedirect;
-  </script></body>
+  </script>
+</body>
 </html>
 ""
