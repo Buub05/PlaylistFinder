@@ -74,13 +74,16 @@
 
     window.onload = () => {
       accessToken = getTokenFromUrl();
+
+      if (accessToken) {
+        history.replaceState(null, "", window.location.pathname); // Rimuove access_token dall'URL
+        document.getElementById("findBtn").disabled = false;
+        document.getElementById("output").innerText = "✅ Login effettuato! Ora puoi cercare le canzoni originali.";
+      }
+
       const savedUrl = localStorage.getItem("playlistUrl");
       if (savedUrl) {
         document.getElementById("playlistUrl").value = savedUrl;
-      }
-      if (accessToken) {
-        document.getElementById("findBtn").disabled = false;
-        document.getElementById("output").innerText = "✅ Login effettuato! Ora puoi cercare le canzoni originali.";
       }
     };
   </script>
