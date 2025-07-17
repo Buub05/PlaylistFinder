@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html><html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,23 +12,18 @@
     .inline { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
     #progressBarContainer { width: 80%; background-color: #333; border-radius: 8px; overflow: hidden; margin: 2rem auto 1rem auto; display: none; }
     #progressBar { height: 20px; background-color: #1db954; width: 0%; transition: width 0.2s; }
+    #resultList { margin-top: 2rem; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto; }
     .genre-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem 1rem; justify-items: start; text-align: left; margin: 1rem auto; max-width: 400px; }
     .track-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   </style>
 </head>
 <body>
-  <h1>🎧 PlaylistFinder</h1>
-
-  <div>
+  <h1>🎧 PlaylistFinder</h1>  <div style="margin-top: 1rem">
     <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()" /> Automatica</label>
-    <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale</label>
-  </div>
-
-  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
+    <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale (seleziona i brani)</label>
+  </div>  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
   <br/>
-  <button onclick="login()">🔐 Login con Spotify</button>
-
-  <details>
+  <button onclick="login()">🔐 Login con Spotify</button>  <details>
     <summary>🎚️ Filtri avanzati</summary>
     <div class="inline">
       <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
@@ -54,74 +48,11 @@
         <label><input type="checkbox" value="jazz" /> Jazz</label>
       </div>
     </div>
-  </details>
-
-  <button onclick="startProcessing()">🎯 Crea nuova playlist</button>
-
-  <div id="progressBarContainer"><div id="progressBar"></div></div>
-  <div id="resultList"></div>
-
-  <script>
-    const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
-    const redirectUri = 'https://buub05.github.io/PlaylistFinder/';
-    let codeVerifier = '';
-    let accessToken = '';
-
-    async function login() {
-      codeVerifier = generateRandomString(128);
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-      localStorage.setItem('code_verifier', codeVerifier);
-      const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=playlist-modify-public playlist-modify-private&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
-      window.location.href = authUrl;
-    }
-
-    async function handleRedirect() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (!code) return;
-      codeVerifier = localStorage.getItem('code_verifier');
-      const body = new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-        client_id: clientId,
-        code_verifier: codeVerifier
-      });
-
-      const res = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
-      });
-
-      const data = await res.json();
-      accessToken = data.access_token;
-      window.history.replaceState({}, document.title, redirectUri);
-    }
-
-    handleRedirect();
-
-    function generateRandomString(length) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
-      for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-      return result;
-    }
-
-    async function generateCodeChallenge(codeVerifier) {
-      const data = new TextEncoder().encode(codeVerifier);
-      const digest = await window.crypto.subtle.digest('SHA-256', data);
-      return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
-
-    function cleanTitle(title) {
-      return title.toLowerCase()
-        .replace(/\(.*?\)|\[.*?\]/g, '')
-        .replace(/remix|live|version|edit|feat\.?|acoustic|piano|instrumental/gi, '')
-        .replace(/\s{2,}/g, ' ').trim();
-    }
-
-    function toggleAdvancedMode() {}
+  </details>  <div style="margin-top: 2rem">
+    <button onclick="startProcessing()">🎯 Crea nuova playlist</button>
+  </div>  <div id="progressBarContainer"><div id="progressBar"></div></div>
+  <div id="resultList"></div>  <script>
+    // ... mantiene il codice esistente fino a startProcessing()
 
     async function startProcessing() {
       if (!accessToken) return alert('🔐 Devi fare login prima.');
@@ -135,6 +66,7 @@
       const maxDur = parseInt(document.getElementById('maxDuration').value || '10000');
       const minPop = parseInt(document.getElementById('minPopularity').value || '0');
       const maxPop = parseInt(document.getElementById('maxPopularity').value || '100');
+
       const selectedGenres = Array.from(document.querySelectorAll('#genreList input:checked')).map(el => el.value);
 
       let allTracks = [], offset = 0;
@@ -173,8 +105,10 @@
           if (exclude.some(k => tname.includes(k))) return false;
           if (include[0] && !include.some(k => tname.includes(k))) return false;
           const dur = track.duration_ms / 1000;
+          if (dur < minDur || dur > maxDur) return false;
           const pop = track.popularity;
-          return dur >= minDur && dur <= maxDur && pop >= minPop && pop <= maxPop;
+          if (pop < minPop || pop > maxPop) return false;
+          return true;
         });
 
         if (matches[0]) {
@@ -234,6 +168,5 @@
 
       alert('✅ Playlist creata con successo!');
     }
-  </script>
-</body>
+  </script></body>
 </html>
