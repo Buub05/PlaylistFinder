@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spotify Super Filtri</title>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    button {
+      background-color: #1db954;
+      color: white;
+      font-size: 1rem;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 1rem;
+    }
+    input, select {
+      padding: 0.5rem;
+      margin: 0.5rem;
+      width: 80%;
+    }
+    .filter-block {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎧 Crea playlist filtrata avanzata</h1>
+  <button onclick="login()">Login con Spotify</button>
+
+  <div style="margin-top: 2rem;">
+    <input type="text" id="playlistLink" placeholder="Incolla il link della playlist" />
+
+      <div class="filter-block">
+        <h3>🎚️ Acousticness</h3>
+        <select id="acousticnessFilter">
+          <option value="none">Nessun filtro</option>
+          <option value="with">Con</option>
+          <option value="without">Senza</option>
+          <option value="only">Solo</option>
+        </select>
+      </div>
+      <div class="filter-block">
+        <h3>🎼 Instrumentalness</h3>
+        <select id="instrumentalnessFilter">
+          <option value="none">Nessun filtro</option>
+          <option value="with">Con</option>
+          <option value="without">Senza</option>
+          <option value="only">Solo</option>
+        </select>
+      </div>
+      <div class="filter-block">
+        <h3>💃 Danceability</h3>
+        <select id="danceabilityFilter">
+          <option value="none">Nessun filtro</option>
+          <option value="with">Con</option>
+          <option value="without">Senza</option>
+          <option value="only">Solo</option>
+        </select>
+      </div>
+      <div class="filter-block">
+        <h3>🔋 Energy</h3>
+        <select id="energyFilter">
+          <option value="none">Nessun filtro</option>
+          <option value="with">Con</option>
+          <option value="without">Senza</option>
+          <option value="only">Solo</option>
+        </select>
+      </div>
+      <div class="filter-block">
+        <h3>😊 Valence (emozione)</h3>
+        <select id="valenceFilter">
+          <option value="none">Nessun filtro</option>
+          <option value="with">Con</option>
+          <option value="without">Senza</option>
+          <option value="only">Solo</option>
+        </select>
+      </div>
+      <div class="filter-block">
+        <h3>🕒 Durata max (minuti)</h3>
+        <input type="number" id="duration" value="5" min="1" max="15" /> minuti
+      </div>
+      <div class="filter-block">
+        <h3>📊 Popularità minima</h3>
+        <input type="range" min="0" max="100" value="50" id="popularityRange" />
+        <span id="popularityValue">50</span>+
+      <div class="filter-block">
+        <h3>🎶 Genere (se disponibile)</h3>
+        <input type="text" id="genre" placeholder="es: rock, pop, jazz" />
+      </div>
+    <div style="margin-top: 2rem;">
+      <button onclick="alert('🚧 Sto ancora collegando la logica dei filtri...')">🎯 Crea playlist filtrata</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("popularityRange").oninput = function () {
+      document.getElementById("popularityValue").textContent = this.value;
+    };
+    function login() {
+      alert("🔐 Funzione login in costruzione!");
+    }
+  </script>
+</body>
+</html>
