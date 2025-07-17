@@ -39,7 +39,7 @@
   </div>  <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="resultList"></div>  <script>
     const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
-    const redirectUri = window.location.origin + window.location.pathname;
+    const redirectUri = 'https://buub05.github.io/PlaylistFinder/';
     let accessToken = '';
     let selectedTracks = [];
 
@@ -104,7 +104,7 @@
 
       const sourceTracks = playlistId ? allTracks : [];
 
-      for (const item of (playlistId ? sourceTracks : [{ track: { name: "Imagine" } }])) {
+      for (const item of sourceTracks) {
         const originalTrack = item.track;
         const candidates = await searchCleanedTrack(originalTrack.name);
         const filtered = candidates.filter(t => {
