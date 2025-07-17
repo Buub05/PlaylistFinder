@@ -1,6 +1,4 @@
-
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html><html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,33 +17,27 @@
 </head>
 <body>
   <h1>🎧 PlaylistFinder</h1>
-  <button onclick="login()">🔐 Login con Spotify</button>
-
-  <div style="margin-top: 2rem;">
+  <button onclick="login()">🔐 Login con Spotify</button>  <div style="margin-top: 2rem;">
     <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()" /> Automatica</label>
     <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale</label>
-  </div>
-
-  <div>
+  </div>  <div>
     <input type="text" id="playlistLink" placeholder="Link playlist Spotify" style="width: 80%;" />
-  </div>
-
-  <details>
-    <summary>🔤 Parole chiave (inclusione / esclusione)</summary>
+  </div>  <details>
+    <summary>🔍 Filtri avanzati</summary>
     <div class="inline">
-      <label>Escludi: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
-      <label>Includi solo: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
+      <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
+      <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
     </div>
-  </details>
-
-  <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🎯 Crea playlist</button>
-  </div>
-
-  <div id="progressBarContainer"><div id="progressBar"></div></div>
-  <div id="resultList"></div>
-
-  <script>
+    <div class="inline">
+      <label>Durata min (sec): <input type="number" id="minDuration" /></label>
+      <label>Durata max (sec): <input type="number" id="maxDuration" /></label>
+      <label>Popolarità min: <input type="number" id="minPopularity" /></label>
+      <label>Popolarità max: <input type="number" id="maxPopularity" /></label>
+    </div>
+  </details>  <div style="margin-top: 2rem">
+    <button onclick="startProcessing()">🎯 Crea nuova playlist</button>
+  </div>  <div id="progressBarContainer"><div id="progressBar"></div></div>
+  <div id="resultList"></div>  <script>
     const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
     const redirectUri = window.location.origin + window.location.pathname;
     let accessToken = '';
@@ -63,7 +55,7 @@
     }
 
     function cleanTitle(title) {
-      return title.toLowerCase().replace(/\(.*?\)|\[.*?\]/g, '').replace(/remix|live|version|edit|feat\.?|acoustic|piano|instrumental/gi, '').replace(/\s{2,}/g, ' ').trim();
+      return title.toLowerCase().replace(/.*?|.*?/g, '').replace(/remix|live|version|edit|feat\.?|acoustic|piano|instrumental/gi, '').replace(/\s{2,}/g, ' ').trim();
     }
 
     async function searchCleanedTrack(originalTitle) {
@@ -85,13 +77,13 @@
       const mode = document.querySelector('input[name="mode"]:checked').value;
       const playlistUrl = document.getElementById('playlistLink').value.trim();
       const playlistId = getPlaylistIdFromUrl(playlistUrl);
-      if (!playlistId) return alert('Link non valido');
+      if (!playlistId && mode !== 'auto') return alert('Link non valido');
 
       simulateProgressBar(8000);
       selectedTracks = [];
 
       let allTracks = [], offset = 0;
-      while (true) {
+      while (playlistId && true) {
         const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&offset=${offset}`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
@@ -103,16 +95,26 @@
 
       const exclude = document.getElementById('excludeKeywords').value.toLowerCase().split(',').map(s => s.trim());
       const include = document.getElementById('includeKeywords').value.toLowerCase().split(',').map(s => s.trim());
+      const minDur = parseInt(document.getElementById('minDuration').value || '0');
+      const maxDur = parseInt(document.getElementById('maxDuration').value || '10000');
+      const minPop = parseInt(document.getElementById('minPopularity').value || '0');
+      const maxPop = parseInt(document.getElementById('maxPopularity').value || '100');
       const resultContainer = document.getElementById('resultList');
       resultContainer.innerHTML = '<h3>Risultati:</h3>';
 
-      for (const item of allTracks) {
+      const sourceTracks = playlistId ? allTracks : [];
+
+      for (const item of (playlistId ? sourceTracks : [{ track: { name: "Imagine" } }])) {
         const originalTrack = item.track;
         const candidates = await searchCleanedTrack(originalTrack.name);
         const filtered = candidates.filter(t => {
           const name = t.name.toLowerCase();
+          const duration = t.duration_ms / 1000;
+          const popularity = t.popularity;
           if (exclude.some(word => name.includes(word))) return false;
           if (include[0] && !include.some(word => name.includes(word))) return false;
+          if (duration < minDur || duration > maxDur) return false;
+          if (popularity < minPop || popularity > maxPop) return false;
           return true;
         });
 
@@ -176,6 +178,5 @@
       const mode = document.querySelector('input[name="mode"]:checked').value;
       console.log("Modalità:", mode);
     }
-  </script>
-</body>
+  </script></body>
 </html>
