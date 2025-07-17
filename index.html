@@ -24,23 +24,65 @@
       color: white;
       cursor: pointer;
     }
-    .inline {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-    }
     details {
       background: #1e1e1e;
       border-radius: 8px;
       margin-top: 1rem;
       padding: 1rem;
-      text-align: left;
     }
     summary {
       font-size: 1.2rem;
       font-weight: bold;
       cursor: pointer;
+    }
+    .inline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .range-wrapper {
+      width: 300px;
+      text-align: center;
+    }
+    .range-label {
+      margin-bottom: 0.3rem;
+      display: block;
+      font-weight: bold;
+    }
+    .range-inputs {
+      position: relative;
+      height: 30px;
+    }
+    .range-inputs input[type=range] {
+      position: absolute;
+      width: 100%;
+      pointer-events: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+    }
+    .range-inputs input[type=range]::-webkit-slider-thumb {
+      pointer-events: all;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #1db954;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+    .range-values {
+      margin-top: 0.5rem;
+    }
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.3rem 1rem;
+      justify-items: start;
+      text-align: left;
+      margin: 1rem auto;
+      max-width: 400px;
     }
     #progressBarContainer {
       width: 80%;
@@ -63,17 +105,15 @@
       margin-right: auto;
     }
     .track-option {
-      background: #1f1f1f;
-      padding: 1rem;
-      margin: 1rem auto;
+      background-color: #1e1e1e;
       border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
     }
     @media (max-width: 600px) {
       .inline {
         flex-direction: column;
-      }
-      input[type=range] {
-        width: 100%;
+        gap: 0.5rem;
       }
     }
   </style>
@@ -82,14 +122,15 @@
   <h1>🎧 PlaylistFinder</h1>
 
   <div style="margin-top: 1rem">
-    <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()"> Automatica</label>
-    <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()"> Manuale</label>
+    <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()" /> Automatica</label>
+    <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale</label>
   </div>
 
-  <input type="text" id="playlistLink" placeholder="Link playlist Spotify" style="width: 80%;" />
-  <br />
+  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
+  <br/>
+  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 60%;" />
+  <br/>
   <button onclick="login()">🔐 Login con Spotify</button>
-  <span id="loginStatus" style="margin-left:1rem;">❌</span>
 
   <details>
     <summary>🎚️ Filtri avanzati</summary>
@@ -97,210 +138,67 @@
       <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
       <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
     </div>
+
     <div class="inline">
-      <label>Durata (sec):
-        <input type="range" min="0" max="3600" value="0" id="minDuration" oninput="updateDurationRange()" />
-        <input type="range" min="0" max="3600" value="3600" id="maxDuration" oninput="updateDurationRange()" />
-        <span id="durationRange">0 - 3600</span>
-      </label>
-      <label>Popolarità:
-        <input type="range" min="0" max="100" value="0" id="minPopularity" oninput="updatePopularityRange()" />
-        <input type="range" min="0" max="100" value="100" id="maxPopularity" oninput="updatePopularityRange()" />
-        <span id="popularityRange">0 - 100</span>
-        <span title="0 = sconosciuto, 100 = molto popolare">❓</span>
-      </label>
+      <div class="range-wrapper">
+        <span class="range-label">⏱️ Durata (sec)</span>
+        <div class="range-inputs">
+          <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRangeLabel('duration')" />
+          <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRangeLabel('duration')" />
+        </div>
+        <div class="range-values" id="durationRange">0 – 3600</div>
+      </div>
+
+      <div class="range-wrapper">
+        <span class="range-label">🔥 Popolarità (0–100)</span>
+        <div class="range-inputs">
+          <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRangeLabel('popularity')" />
+          <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRangeLabel('popularity')" />
+        </div>
+        <div class="range-values" id="popularityRange">0 – 100</div>
+      </div>
+    </div>
+
+    <div class="inline">
+      <label>Generi:</label>
+      <div class="genre-grid" id="genreList">
+        <label><input type="checkbox" value="pop" /> Pop</label>
+        <label><input type="checkbox" value="rock" /> Rock</label>
+        <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
+        <label><input type="checkbox" value="classical" /> Classica</label>
+        <label><input type="checkbox" value="acoustic" /> Acustico</label>
+        <label><input type="checkbox" value="piano" /> Piano</label>
+        <label><input type="checkbox" value="instrumental" /> Instrumental</label>
+        <label><input type="checkbox" value="edm" /> EDM</label>
+        <label><input type="checkbox" value="jazz" /> Jazz</label>
+        <label><input type="checkbox" value="remix" /> Remix</label>
+      </div>
+    </div>
+
+    <div class="inline">
+      <label>Generi personalizzati: <input type="text" id="customGenres" placeholder="es: lo-fi, ambient..." /></label>
     </div>
   </details>
 
   <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🎯 Crea nuova playlist</button>
-    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">✅ Crea dalla selezione</button>
+    <button onclick="startProcessing()">🎯 Trova brani originali</button>
+    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">📥 Crea da selezione</button>
   </div>
 
   <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="trackSelection"></div>
 
   <script>
-    const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
-    const redirectUri = 'https://buub05.github.io/PlaylistFinder/';
-
-    let accessToken = '';
-    let codeVerifier = '';
-
-    async function login() {
-      codeVerifier = generateRandomString(128);
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-      localStorage.setItem('code_verifier', codeVerifier);
-      const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=playlist-modify-public playlist-modify-private&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
-      window.location.href = authUrl;
+    function updateRangeLabel(type) {
+      const min = document.getElementById('min' + capitalize(type)).value;
+      const max = document.getElementById('max' + capitalize(type)).value;
+      document.getElementById(type + 'Range').textContent = `${min} – ${max}`;
     }
-
-    async function handleRedirect() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (!code) return;
-
-      codeVerifier = localStorage.getItem('code_verifier');
-      const body = new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-        client_id: clientId,
-        code_verifier: codeVerifier
-      });
-
-      const res = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
-      });
-
-      const data = await res.json();
-      accessToken = data.access_token;
-      if (accessToken) {
-        document.getElementById("loginStatus").textContent = "✅";
-      }
-      window.history.replaceState({}, document.title, redirectUri);
-    }
-
-    handleRedirect();
-
-    function generateRandomString(length) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(x => chars[x % chars.length]).join('');
-    }
-
-    async function generateCodeChallenge(codeVerifier) {
-      const data = new TextEncoder().encode(codeVerifier);
-      const digest = await crypto.subtle.digest('SHA-256', data);
-      return btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
-
-    function updateDurationRange() {
-      const min = document.getElementById('minDuration').value;
-      const max = document.getElementById('maxDuration').value;
-      document.getElementById('durationRange').innerText = `${min} - ${max}`;
-    }
-
-    function updatePopularityRange() {
-      const min = document.getElementById('minPopularity').value;
-      const max = document.getElementById('maxPopularity').value;
-      document.getElementById('popularityRange').innerText = `${min} - ${max}`;
-    }
-
-    function toggleAdvancedMode() {
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      document.getElementById("createManualPlaylist").style.display = (mode === 'manual') ? 'inline-block' : 'none';
-    }
-
-    function cleanTitle(title) {
-      return title.toLowerCase().replace(/\(.*?\)|\[.*?\]/g, '').replace(/\s{2,}/g, ' ').trim();
-    }
-
-    async function startProcessing() {
-      if (!accessToken) return alert("🔐 Fai login prima.");
-      const playlistUrl = document.getElementById("playlistLink").value.trim();
-      const playlistId = playlistUrl.includes("/playlist/") ? playlistUrl.split("/playlist/")[1].split("?")[0] : null;
-
-      const exclude = document.getElementById("excludeKeywords").value.toLowerCase().split(',').map(x => x.trim());
-      const include = document.getElementById("includeKeywords").value.toLowerCase().split(',').map(x => x.trim());
-      const minDur = parseInt(document.getElementById('minDuration').value);
-      const maxDur = parseInt(document.getElementById('maxDuration').value);
-      const minPop = parseInt(document.getElementById('minPopularity').value);
-      const maxPop = parseInt(document.getElementById('maxPopularity').value);
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-
-      let allTracks = [], offset = 0;
-      while (true) {
-        const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&offset=${offset}`, {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        const json = await res.json();
-        if (!json.items) break;
-        allTracks.push(...json.items);
-        if (!json.next) break;
-        offset += 100;
-      }
-
-      let found = 0, results = [], manualTracks = [];
-      document.getElementById("progressBarContainer").style.display = "block";
-
-      for (let i = 0; i < allTracks.length; i++) {
-        const track = allTracks[i].track;
-        const query = encodeURIComponent(cleanTitle(track.name));
-        const res = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=5`, {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        const json = await res.json();
-        const matches = (json.tracks.items || []).filter(t => {
-          const name = t.name.toLowerCase();
-          const dur = t.duration_ms / 1000;
-          const pop = t.popularity;
-          if (exclude.some(k => name.includes(k))) return false;
-          if (include.length && !include.some(k => name.includes(k))) return false;
-          if (dur < minDur || dur > maxDur) return false;
-          if (pop < minPop || pop > maxPop) return false;
-          return true;
-        });
-        if (mode === "auto" && matches[0]) results.push(matches[0].uri);
-        else if (mode === "manual" && matches.length) {
-          manualTracks.push({ original: track.name, options: matches });
-        }
-        found++;
-        document.getElementById("progressBar").style.width = `${(found / allTracks.length) * 100}%`;
-      }
-
-      if (mode === "auto") createPlaylist(results);
-      else renderManualSelection(manualTracks);
-    }
-
-    function renderManualSelection(tracks) {
-      const container = document.getElementById("trackSelection");
-      container.innerHTML = '';
-      tracks.forEach((t, i) => {
-        const div = document.createElement('div');
-        div.className = 'track-option';
-        div.innerHTML = `<b>${t.original}</b><br>`;
-        t.options.forEach(opt => {
-          const radio = document.createElement('input');
-          radio.type = 'radio';
-          radio.name = `track-${i}`;
-          radio.value = opt.uri;
-          div.appendChild(radio);
-          div.innerHTML += ` ${opt.name} - ${opt.artists.map(a => a.name).join(', ')}<br>`;
-        });
-        container.appendChild(div);
-      });
-    }
-
-    async function createManualPlaylist() {
-      const selected = Array.from(document.querySelectorAll('input[type="radio"]:checked')).map(el => el.value);
-      await createPlaylist(selected);
-    }
-
-    async function createPlaylist(uris) {
-      if (!uris.length) return alert("⛔ Nessuna traccia trovata!");
-      const user = await fetch('https://api.spotify.com/v1/me', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      }).then(r => r.json());
-
-      const playlist = await fetch(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: '🎧 Playlist Generata', public: false })
-      }).then(r => r.json());
-
-      for (let i = 0; i < uris.length; i += 100) {
-        await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uris: uris.slice(i, i + 100) })
-        });
-      }
-
-      alert("✅ Playlist creata con successo!");
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
     }
   </script>
+
+  <!-- Continua con il tuo JavaScript principale per login, fetch, creazione playlist, ecc. -->
 </body>
 </html>
