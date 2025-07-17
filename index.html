@@ -2,18 +2,18 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PlaylistFinder</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
   <style>
     body {
       background-color: #121212;
       color: white;
       font-family: sans-serif;
-      padding: 2rem;
+      padding: 1.5rem;
       text-align: center;
     }
-    input, select, button, textarea {
+    input, select, button {
       margin: 0.5rem;
       padding: 0.6rem;
       font-size: 1rem;
@@ -28,8 +28,8 @@
     details {
       background: #1e1e1e;
       border-radius: 8px;
-      margin-top: 1rem;
       padding: 1rem;
+      margin-top: 1rem;
     }
     summary {
       font-size: 1.2rem;
@@ -38,141 +38,68 @@
     }
     .inline {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .genre-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.3rem 1rem;
-      justify-items: start;
-      text-align: left;
-      margin: 1rem auto;
-      max-width: 400px;
-    }
-    #progressBarContainer {
-      width: 80%;
-      background-color: #333;
-      border-radius: 8px;
-      overflow: hidden;
-      margin: 2rem auto 1rem auto;
-      display: none;
-    }
-    #progressBar {
-      height: 20px;
-      background-color: #1db954;
-      width: 0%;
-    }
-    #trackSelection {
-      margin-top: 2rem;
-      text-align: left;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .track-option {
-      background-color: #1e1e1e;
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 1rem;
     }
     .slider-wrapper {
       margin: 1rem auto;
-      width: 70%;
-      max-width: 400px;
+      width: 90%;
+      max-width: 300px;
     }
-
     .noUi-target {
-      background: #444;
+      background: #333;
       border-radius: 10px;
-      border: none;
-      box-shadow: inset 0 1px 2px #000;
-      height: 8px;
+      border: 1px solid #666;
+      height: 10px;
     }
-
     .noUi-connect {
       background: #1db954;
     }
-
     .noUi-handle {
       background: white;
       border: 2px solid #1db954;
       border-radius: 50%;
-      cursor: grab;
-      height: 20px;
-      width: 20px;
-      top: -7px;
+      height: 18px;
+      width: 18px;
+      top: -5px;
     }
-
     .slider-label {
-      margin-top: 0.5rem;
       font-size: 0.9rem;
+      margin-bottom: 0.2rem;
     }
   </style>
 </head>
 <body>
   <h1>🎧 PlaylistFinder</h1>
 
-  <div style="margin-top: 1rem">
-    <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()" /> Automatica</label>
-    <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale</label>
-  </div>
-
   <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
   <br/>
-  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 60%; margin-top: 0.5rem;" />
+  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 60%;" />
   <br/>
   <button onclick="login()">🔐 Login con Spotify</button>
   <span id="loginStatus" style="margin-left: 1rem;"></span>
 
   <details>
-    <summary>🎚️ Filtri avanzati</summary>
-    <div class="inline">
-      <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
-      <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
-    </div>
+    <summary>🎚️ Filtri</summary>
 
     <div class="slider-wrapper">
-      <div>🎵 Durata (secondi): <span id="durationLabel">0 - 3600+</span></div>
+      <div class="slider-label">🎵 Durata (sec): <span id="durationLabel">0 - 3600</span></div>
       <div id="slider-duration"></div>
     </div>
 
     <div class="slider-wrapper">
-      <div>🔥 Popolarità (0–100): <span id="popularityLabel">0 - 100</span>
-        <span title="0 = poco popolare, 100 = molto popolare">❓</span>
-      </div>
+      <div class="slider-label">🔥 Popolarità: <span id="popularityLabel">0 - 100</span></div>
       <div id="slider-popularity"></div>
     </div>
 
-    <div class="inline">
-      <label>Generi:</label>
-      <div class="genre-grid" id="genreList">
-        <label><input type="checkbox" value="pop" /> Pop</label>
-        <label><input type="checkbox" value="rock" /> Rock</label>
-        <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
-        <label><input type="checkbox" value="classical" /> Classica</label>
-        <label><input type="checkbox" value="acoustic" /> Acustico</label>
-        <label><input type="checkbox" value="piano" /> Piano</label>
-        <label><input type="checkbox" value="instrumental" /> Instrumental</label>
-        <label><input type="checkbox" value="edm" /> EDM</label>
-      </div>
-    </div>
-    <div class="inline">
-      <label>Generi personalizzati: <input type="text" id="customGenres" placeholder="es: indie, trap..." /></label>
-    </div>
   </details>
 
   <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🎯 Trova brani originali</button>
-    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">📥 Crea da selezione</button>
+    <button onclick="alert('Funzione non ancora collegata')">🎯 Trova brani</button>
   </div>
 
-  <div id="progressBarContainer"><div id="progressBar"></div></div>
-  <div id="trackSelection"></div>
-
-  <!-- Script -->
+  <!-- Slider JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
   <script>
     let accessToken = '';
@@ -181,6 +108,20 @@
     let codeVerifier = '';
     let durationRange = [0, 3600];
     let popularityRange = [0, 100];
+
+    function generateRandomString(length) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+        .map(x => chars[x % chars.length])
+        .join('');
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+      const data = new TextEncoder().encode(codeVerifier);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
 
     async function login() {
       codeVerifier = generateRandomString(128);
@@ -213,56 +154,31 @@
 
       const data = await res.json();
       accessToken = data.access_token;
-      document.getElementById("loginStatus").textContent = "✅ Accesso eseguito";
+      document.getElementById("loginStatus").textContent = "✅ Login eseguito";
       window.history.replaceState({}, document.title, redirectUri);
     }
 
     handleRedirect();
 
-    function generateRandomString(length) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-        .map(x => chars[x % chars.length])
-        .join('');
-    }
-
-    async function generateCodeChallenge(codeVerifier) {
-      const data = new TextEncoder().encode(codeVerifier);
-      const digest = await crypto.subtle.digest('SHA-256', data);
-      return btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
-
-    function toggleAdvancedMode() {
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      const manualBtn = document.getElementById("createManualPlaylist");
-      manualBtn.style.display = (mode === "manual") ? "inline-block" : "none";
-    }
-
     function initSliders() {
-      const durationSlider = document.getElementById('slider-duration');
-      const popularitySlider = document.getElementById('slider-popularity');
-
-      noUiSlider.create(durationSlider, {
+      noUiSlider.create(document.getElementById('slider-duration'), {
         start: [0, 3600],
         connect: true,
         range: { min: 0, max: 3600 },
-        step: 1
-      });
-      durationSlider.noUiSlider.on('update', function(values) {
-        document.getElementById('durationLabel').textContent = `${Math.round(values[0])} - ${Math.round(values[1])}+`;
+        step: 10
+      }).on('update', (values) => {
         durationRange = values.map(v => Math.round(v));
+        document.getElementById('durationLabel').textContent = `${durationRange[0]} - ${durationRange[1]}`;
       });
 
-      noUiSlider.create(popularitySlider, {
+      noUiSlider.create(document.getElementById('slider-popularity'), {
         start: [0, 100],
         connect: true,
         range: { min: 0, max: 100 },
         step: 1
-      });
-      popularitySlider.noUiSlider.on('update', function(values) {
-        document.getElementById('popularityLabel').textContent = `${Math.round(values[0])} - ${Math.round(values[1])}`;
+      }).on('update', (values) => {
         popularityRange = values.map(v => Math.round(v));
+        document.getElementById('popularityLabel').textContent = `${popularityRange[0]} - ${popularityRange[1]}`;
       });
     }
 
