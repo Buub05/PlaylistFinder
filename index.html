@@ -1,127 +1,138 @@
-<!DOCTYPE html><html lang="it">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spotify Playlist Filtrata</title>
-  <style>
-    body {
-      background-color: #121212;
-      color: white;
-      font-family: sans-serif;
-      padding: 2rem;
-      text-align: center;
+<script>
+const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
+const redirectUri = window.location.origin + window.location.pathname;
+let accessToken = '';
+let selectedTracks = [];
+
+function login() {
+  const scopes = 'playlist-modify-public playlist-modify-private';
+  const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+  window.location.href = authUrl;
+}
+
+// --- Recupera token se presente nell'URL
+if (window.location.hash.includes('access_token')) {
+  accessToken = new URLSearchParams(window.location.hash.substring(1)).get('access_token');
+  history.replaceState(null, null, redirectUri);
+}
+
+// --- Pulizia titolo
+function cleanTitle(title) {
+  return title
+    .toLowerCase()
+    .replace(/\\(.*?\\)/g, '') // Rimuove testo tra parentesi
+    .replace(/\\[.*?\\]/g, '') // Rimuove testo tra parentesi quadre
+    .replace(/remix|live|version|edit|feat\\.?|acoustic|piano|instrumental/gi, '')
+    .replace(/\\s{2,}/g, ' ')
+    .trim();
+}
+
+// --- Ricerca brani simili su Spotify
+async function searchCleanedTrack(originalTitle) {
+  const cleaned = cleanTitle(originalTitle);
+  const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(cleaned)}&type=track&limit=5`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  const data = await response.json();
+  return data.tracks?.items || [];
+}
+
+function getPlaylistIdFromUrl(url) {
+  const match = url.match(/playlist\\/(\\w+)/);
+  return match ? match[1] : null;
+}
+
+// --- Applica i filtri e crea playlist
+async function startProcessing() {
+  if (!accessToken) return alert('Devi effettuare il login prima!');
+  const mode = document.querySelector('input[name=\"mode\"]:checked').value;
+  const playlistUrl = document.getElementById('playlistLink').value.trim();
+  const playlistId = getPlaylistIdFromUrl(playlistUrl);
+  if (!playlistId) return alert('Link playlist non valido');
+
+  simulateProgressBar(8000);
+  selectedTracks = [];
+
+  // --- Ottiene tutti i brani dalla playlist
+  let allTracks = [], offset = 0;
+  while (true) {
+    const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&offset=${offset}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const json = await res.json();
+    allTracks.push(...json.items);
+    if (!json.next) break;
+    offset += 100;
+  }
+
+  const exclude = document.getElementById('excludeKeywords').value.toLowerCase().split(',').map(s => s.trim());
+  const include = document.getElementById('includeKeywords').value.toLowerCase().split(',').map(s => s.trim());
+
+  const resultContainer = document.getElementById('resultList');
+  resultContainer.innerHTML = '';
+  resultContainer.innerHTML = `<h3>Risultati trovati:</h3>`;
+
+  for (const item of allTracks) {
+    const originalTrack = item.track;
+    const candidates = await searchCleanedTrack(originalTrack.name);
+    const filtered = candidates.filter(t => {
+      const name = t.name.toLowerCase();
+      if (exclude.some(word => name.includes(word))) return false;
+      if (include[0] && !include.some(word => name.includes(word))) return false;
+      return true;
+    });
+
+    if (mode === 'auto' && filtered[0]) {
+      selectedTracks.push(filtered[0].uri);
+    } else if (mode === 'manual') {
+      const group = document.createElement('div');
+      group.innerHTML = `<strong>${originalTrack.name}</strong><br>`;
+      filtered.forEach((track, idx) => {
+        const btn = document.createElement('button');
+        btn.textContent = `${track.name} — ${track.artists.map(a => a.name).join(', ')}`;
+        btn.onclick = () => {
+          btn.style.background = '#1db954';
+          selectedTracks.push(track.uri);
+        };
+        group.appendChild(btn);
+      });
+      resultContainer.appendChild(group);
+      resultContainer.appendChild(document.createElement('hr'));
     }
-    input, select, button {
-      margin: 0.5rem;
-      padding: 0.6rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      background-color: #1db954;
-      color: white;
-      cursor: pointer;
-    }
-    details {
-      background: #1e1e1e;
-      border-radius: 8px;
-      margin-top: 1rem;
-      padding: 1rem;
-    }
-    summary {
-      font-size: 1.2rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .inline {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-  </style>
-</head>
-<body>
-  <h1>🎧 Playlist Spotify Filtrata</h1>
-  <button onclick="login()">🔐 Login con Spotify</button>  <div style="margin-top: 2rem;">
-    <label><input type="radio" name="mode" value="fromPlaylist" checked onchange="toggleMode()" /> Da una playlist</label>
-    <label><input type="radio" name="mode" value="fromScratch" onchange="toggleMode()" /> Crea da zero</label>
-  </div>  <div id="playlistInputBlock">
-    <input type="text" id="playlistLink" placeholder="Link playlist Spotify" style="width: 80%;" />
-  </div>  <details open>
-    <summary>🎚️ Filtri audio</summary>
-    <div class="inline">
-      <label>Acousticness:
-        <select id="acousticnessFilter">
-          <option value="none">Nessuno</option>
-          <option value="with">Con</option>
-          <option value="without">Senza</option>
-          <option value="only">Solo</option>
-        </select>
-      </label>
-      <label>Instrumentalness:
-        <select id="instrumentalnessFilter">
-          <option value="none">Nessuno</option>
-          <option value="with">Con</option>
-          <option value="without">Senza</option>
-          <option value="only">Solo</option>
-        </select>
-      </label>
-      <label>Energy:
-        <select id="energyFilter">
-          <option value="none">Nessuno</option>
-          <option value="with">Con</option>
-          <option value="without">Senza</option>
-          <option value="only">Solo</option>
-        </select>
-      </label>
-    </div>
-  </details>  <details>
-    <summary>🎵 Genere</summary>
-    <div>
-      <label><input type="checkbox" name="genre" value="pop" /> Pop</label>
-      <label><input type="checkbox" name="genre" value="rock" /> Rock</label>
-      <label><input type="checkbox" name="genre" value="jazz" /> Jazz</label>
-      <label><input type="checkbox" name="genre" value="electronic" /> Electronic</label>
-      <label><input type="checkbox" name="genre" value="hip-hop" /> Hip-Hop</label>
-      <label><input type="checkbox" name="genre" value="classical" /> Classical</label>
-      <br/>
-      <input type="text" id="genreField" placeholder="Altro genere (es: lofi, trap)" style="margin-top: 0.5rem;" />
-    </div>
-  </details>  <details>
-    <summary>🌍 Lingua & Anno</summary>
-    <div class="inline">
-      <label>Lingua:
-        <input type="text" id="languageField" placeholder="es: en, it, es" maxlength="2" />
-      </label>
-      <label>Anno:
-        <input type="number" id="yearField" min="1900" max="2099" />
-      </label>
-    </div>
-  </details>  <details>
-    <summary>📊 Durata, Popolarità, Ordinamento</summary>
-    <div class="inline">
-      <label>Durata max (min):
-        <input type="number" id="durationLimit" min="1" max="15" value="5" />
-      </label>
-      <label>Popolarità min:
-        <input type="range" id="popularityRange" min="0" max="100" value="50" oninput="document.getElementById('popVal').textContent = this.value" />
-        <span id="popVal">50</span>+
-      </label>
-      <label>Ordina per:
-        <select id="sortOrder">
-          <option value="popularity">Popolarità</option>
-          <option value="duration_ms">Durata</option>
-          <option value="random">Casuale</option>
-        </select>
-      </label>
-    </div>
-  </details>  <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🎯 Crea playlist filtrata</button>
-  </div>  <div id="preview" style="margin-top:2rem;"></div>  <script>
-    // JS avanzato incluso nel prossimo blocco se richiesto
-    alert("✅ Layout aggiornato: ora puoi applicare i filtri e cliccare su 'Crea playlist filtrata'. Il codice JS è pronto all'integrazione completa.");
-  </script></body>
-</html>
+  }
+
+  // --- Crea nuova playlist e aggiunge tracce
+  const userRes = await fetch(`https://api.spotify.com/v1/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  const user = await userRes.json();
+
+  const createRes = await fetch(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: '🎧 Playlist Originale Filtrata',
+      description: 'Generata con PlaylistFinder',
+      public: false
+    })
+  });
+
+  const createdPlaylist = await createRes.json();
+  for (let i = 0; i < selectedTracks.length; i += 100) {
+    const chunk = selectedTracks.slice(i, i + 100);
+    await fetch(`https://api.spotify.com/v1/playlists/${createdPlaylist.id}/tracks`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ uris: chunk })
+    });
+  }
+
+  alert(`✅ Playlist creata! Vai su Spotify per ascoltarla.`);
+}
+                                </script>
