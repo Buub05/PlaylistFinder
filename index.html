@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PlaylistFinder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css">
   <style>
     body {
       background-color: #121212;
@@ -37,43 +38,10 @@
     }
     .inline {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: center;
       gap: 1rem;
-    }
-    .range-wrapper {
-      width: 300px;
-      text-align: center;
-    }
-    .range-label {
-      margin-bottom: 0.3rem;
-      display: block;
-      font-weight: bold;
-    }
-    .range-inputs {
-      position: relative;
-      height: 30px;
-    }
-    .range-inputs input[type=range] {
-      position: absolute;
-      width: 100%;
-      pointer-events: none;
-      -webkit-appearance: none;
-      appearance: none;
-      background: transparent;
-    }
-    .range-inputs input[type=range]::-webkit-slider-thumb {
-      pointer-events: all;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #1db954;
-      cursor: pointer;
-      -webkit-appearance: none;
-    }
-    .range-values {
-      margin-top: 0.5rem;
+      flex-wrap: wrap;
     }
     .genre-grid {
       display: grid;
@@ -110,11 +78,37 @@
       padding: 1rem;
       margin-bottom: 1rem;
     }
-    @media (max-width: 600px) {
-      .inline {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
+    .slider-wrapper {
+      margin: 1rem auto;
+      width: 70%;
+      max-width: 400px;
+    }
+
+    .noUi-target {
+      background: #444;
+      border-radius: 10px;
+      border: none;
+      box-shadow: inset 0 1px 2px #000;
+      height: 8px;
+    }
+
+    .noUi-connect {
+      background: #1db954;
+    }
+
+    .noUi-handle {
+      background: white;
+      border: 2px solid #1db954;
+      border-radius: 50%;
+      cursor: grab;
+      height: 20px;
+      width: 20px;
+      top: -7px;
+    }
+
+    .slider-label {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -128,9 +122,10 @@
 
   <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
   <br/>
-  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 60%;" />
+  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 60%; margin-top: 0.5rem;" />
   <br/>
   <button onclick="login()">🔐 Login con Spotify</button>
+  <span id="loginStatus" style="margin-left: 1rem;"></span>
 
   <details>
     <summary>🎚️ Filtri avanzati</summary>
@@ -139,24 +134,16 @@
       <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
     </div>
 
-    <div class="inline">
-      <div class="range-wrapper">
-        <span class="range-label">⏱️ Durata (sec)</span>
-        <div class="range-inputs">
-          <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRangeLabel('duration')" />
-          <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRangeLabel('duration')" />
-        </div>
-        <div class="range-values" id="durationRange">0 – 3600</div>
-      </div>
+    <div class="slider-wrapper">
+      <div>🎵 Durata (secondi): <span id="durationLabel">0 - 3600+</span></div>
+      <div id="slider-duration"></div>
+    </div>
 
-      <div class="range-wrapper">
-        <span class="range-label">🔥 Popolarità (0–100)</span>
-        <div class="range-inputs">
-          <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRangeLabel('popularity')" />
-          <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRangeLabel('popularity')" />
-        </div>
-        <div class="range-values" id="popularityRange">0 – 100</div>
+    <div class="slider-wrapper">
+      <div>🔥 Popolarità (0–100): <span id="popularityLabel">0 - 100</span>
+        <span title="0 = poco popolare, 100 = molto popolare">❓</span>
       </div>
+      <div id="slider-popularity"></div>
     </div>
 
     <div class="inline">
@@ -170,13 +157,10 @@
         <label><input type="checkbox" value="piano" /> Piano</label>
         <label><input type="checkbox" value="instrumental" /> Instrumental</label>
         <label><input type="checkbox" value="edm" /> EDM</label>
-        <label><input type="checkbox" value="jazz" /> Jazz</label>
-        <label><input type="checkbox" value="remix" /> Remix</label>
       </div>
     </div>
-
     <div class="inline">
-      <label>Generi personalizzati: <input type="text" id="customGenres" placeholder="es: lo-fi, ambient..." /></label>
+      <label>Generi personalizzati: <input type="text" id="customGenres" placeholder="es: indie, trap..." /></label>
     </div>
   </details>
 
@@ -188,17 +172,101 @@
   <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="trackSelection"></div>
 
+  <!-- Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
   <script>
-    function updateRangeLabel(type) {
-      const min = document.getElementById('min' + capitalize(type)).value;
-      const max = document.getElementById('max' + capitalize(type)).value;
-      document.getElementById(type + 'Range').textContent = `${min} – ${max}`;
-    }
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-  </script>
+    let accessToken = '';
+    const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
+    const redirectUri = 'https://buub05.github.io/PlaylistFinder/';
+    let codeVerifier = '';
+    let durationRange = [0, 3600];
+    let popularityRange = [0, 100];
 
-  <!-- Continua con il tuo JavaScript principale per login, fetch, creazione playlist, ecc. -->
+    async function login() {
+      codeVerifier = generateRandomString(128);
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      localStorage.setItem('code_verifier', codeVerifier);
+
+      const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=playlist-modify-public playlist-modify-private&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
+      window.location.href = authUrl;
+    }
+
+    async function handleRedirect() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (!code) return;
+
+      codeVerifier = localStorage.getItem('code_verifier');
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        code_verifier: codeVerifier
+      });
+
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+
+      const data = await res.json();
+      accessToken = data.access_token;
+      document.getElementById("loginStatus").textContent = "✅ Accesso eseguito";
+      window.history.replaceState({}, document.title, redirectUri);
+    }
+
+    handleRedirect();
+
+    function generateRandomString(length) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+        .map(x => chars[x % chars.length])
+        .join('');
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+      const data = new TextEncoder().encode(codeVerifier);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function toggleAdvancedMode() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      const manualBtn = document.getElementById("createManualPlaylist");
+      manualBtn.style.display = (mode === "manual") ? "inline-block" : "none";
+    }
+
+    function initSliders() {
+      const durationSlider = document.getElementById('slider-duration');
+      const popularitySlider = document.getElementById('slider-popularity');
+
+      noUiSlider.create(durationSlider, {
+        start: [0, 3600],
+        connect: true,
+        range: { min: 0, max: 3600 },
+        step: 1
+      });
+      durationSlider.noUiSlider.on('update', function(values) {
+        document.getElementById('durationLabel').textContent = `${Math.round(values[0])} - ${Math.round(values[1])}+`;
+        durationRange = values.map(v => Math.round(v));
+      });
+
+      noUiSlider.create(popularitySlider, {
+        start: [0, 100],
+        connect: true,
+        range: { min: 0, max: 100 },
+        step: 1
+      });
+      popularitySlider.noUiSlider.on('update', function(values) {
+        document.getElementById('popularityLabel').textContent = `${Math.round(values[0])} - ${Math.round(values[1])}`;
+        popularityRange = values.map(v => Math.round(v));
+      });
+    }
+
+    window.onload = initSliders;
+  </script>
 </body>
 </html>
