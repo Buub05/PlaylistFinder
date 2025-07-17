@@ -5,41 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PlaylistFinder</title>
   <style>
-    body { background-color: #121212; color: white; font-family: sans-serif; padding: 2rem; text-align: center; }
-    input, select, button, textarea { margin: 0.5rem; padding: 0.6rem; font-size: 1rem; border-radius: 6px; border: none; }
-    button { background-color: #1db954; color: white; cursor: pointer; }
-    details { background: #1e1e1e; border-radius: 8px; margin-top: 1rem; padding: 1rem; text-align: left; }
-    summary { font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-bottom: 1rem; }
-    .inline { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-    #progressBarContainer { width: 80%; background-color: #333; border-radius: 8px; overflow: hidden; margin: 2rem auto 1rem auto; display: none; }
-    #progressBar { height: 20px; background-color: #1db954; width: 0%; transition: width 0.2s; }
-    .genre-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem 1rem; justify-items: start; text-align: left; margin: 1rem auto; max-width: 400px; }
-    .tooltip { position: relative; display: inline-block; cursor: pointer; }
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 220px;
-      background-color: #555;
-      color: #fff;
-      text-align: left;
-      border-radius: 6px;
-      padding: 10px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%;
-      left: 50%;
-      margin-left: -110px;
-      opacity: 0;
-      transition: opacity 0.3s;
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
     }
-    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
-    #trackSelection { text-align: left; max-width: 600px; margin: 2rem auto; }
-    .track-option { margin-bottom: 1rem; text-align: left; background-color: #1e1e1e; padding: 1rem; border-radius: 6px; }
+    input, select, button, textarea {
+      margin: 0.5rem;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background-color: #1db954;
+      color: white;
+      cursor: pointer;
+    }
+    details {
+      background: #1e1e1e;
+      border-radius: 8px;
+      margin-top: 1rem;
+      padding: 1rem;
+    }
+    summary {
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .inline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    #progressBarContainer {
+      width: 80%;
+      background-color: #333;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 2rem auto 1rem auto;
+      display: none;
+    }
+    #progressBar {
+      height: 20px;
+      background-color: #1db954;
+      width: 0%;
+    }
+    #resultList {
+      margin-top: 2rem;
+      text-align: left;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.3rem 1rem;
+      justify-items: start;
+      text-align: left;
+      margin: 1rem auto;
+      max-width: 400px;
+    }
+    .track-option {
+      background: #1f1f1f;
+      margin: 1rem auto;
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 800px;
+      text-align: left;
+    }
+    input[type=range] {
+      width: 200px;
+    }
   </style>
 </head>
 <body>
   <h1>🎧 PlaylistFinder</h1>
 
-  <div>
+  <div style="margin-top: 1rem">
     <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()" /> Automatica</label>
     <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale</label>
   </div>
@@ -55,20 +103,16 @@
       <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
     </div>
     <div class="inline">
-      <label>Durata <span style="color: #ccc;">(secondi)</span>:
-        <input type="range" id="minDuration" min="0" max="7200" value="0" oninput="updateDurationRange()">
-        <input type="range" id="maxDuration" min="0" max="7200" value="7200" oninput="updateDurationRange()">
-        <span id="durationRange">0 - 7200</span>
+      <label>Durata (sec):
+        <input type="range" min="0" max="3600" value="0" id="minDuration" oninput="updateDurationRange()" />
+        <input type="range" min="0" max="3600" value="3600" id="maxDuration" oninput="updateDurationRange()" />
+        <span id="durationRange">0 - 3600</span>
       </label>
-    </div>
-    <div class="inline">
-      <label>Popolarità <span style="color: #ccc;">(0–100)</span>:
-        <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updatePopularityRange()">
-        <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updatePopularityRange()">
+      <label>Popolarità:
+        <input type="range" min="0" max="100" value="0" id="minPopularity" oninput="updatePopularityRange()" />
+        <input type="range" min="0" max="100" value="100" id="maxPopularity" oninput="updatePopularityRange()" />
         <span id="popularityRange">0 - 100</span>
-        <span class="tooltip">❓
-          <span class="tooltiptext">La popolarità è un punteggio da 0 a 100 calcolato da Spotify in base a stream, salvataggi e tendenze.</span>
-        </span>
+        <span title="0 = sconosciuto, 100 = molto popolare">❓</span>
       </label>
     </div>
     <div class="inline">
@@ -77,21 +121,23 @@
         <label><input type="checkbox" value="pop" /> Pop</label>
         <label><input type="checkbox" value="rock" /> Rock</label>
         <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
-        <label><input type="checkbox" value="r&b" /> R&B</label>
-        <label><input type="checkbox" value="jazz" /> Jazz</label>
-        <label><input type="checkbox" value="edm" /> EDM</label>
-        <label><input type="checkbox" value="metal" /> Metal</label>
         <label><input type="checkbox" value="classical" /> Classica</label>
         <label><input type="checkbox" value="acoustic" /> Acustico</label>
-        <label><input type="checkbox" value="indie" /> Indie</label>
+        <label><input type="checkbox" value="piano" /> Piano</label>
+        <label><input type="checkbox" value="instrumental" /> Instrumental</label>
+        <label><input type="checkbox" value="remix" /> Remix</label>
+        <label><input type="checkbox" value="edm" /> EDM</label>
+        <label><input type="checkbox" value="jazz" /> Jazz</label>
       </div>
-      <input type="text" id="customGenres" placeholder="Altri generi separati da virgola..." style="width: 80%;" />
     </div>
+    <label>Generi personalizzati:
+      <input type="text" id="customGenres" placeholder="es. lo-fi, ambient..." />
+    </label>
   </details>
 
   <div style="margin-top: 2rem">
     <button onclick="startProcessing()">🎯 Crea nuova playlist</button>
-    <button id="createManualPlaylist" style="display: none;" onclick="createManualPlaylist()">📋 Crea playlist dai selezionati</button>
+    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">✅ Crea dalla selezione</button>
   </div>
 
   <div id="progressBarContainer"><div id="progressBar"></div></div>
