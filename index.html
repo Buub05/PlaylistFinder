@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="it">
+<!DOCTYPE html>
+<html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -45,88 +46,59 @@
   </div>
   <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
   <br/>
-  <button onclick="login()">🔐 Login con Spotify</button>  <details>
-    <summary>🎚️ Filtri avanzati</summary><div class="inline">
-  <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
-  <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
-</div>
+  <button onclick="login()">🔐 Login con Spotify</button>
 
-<div class="inline">
-  <label>
-    Durata <span class="unit">(secondi)</span>:
-    <input type="range" id="minDuration" min="0" max="7200" value="0" oninput="updateDurationRange()">
-    <input type="range" id="maxDuration" min="0" max="7200" value="7200" oninput="updateDurationRange()">
-    <span id="durationRange">0 - 7200</span>
-  </label>
-</div>
+  <details>
+    <summary>🎚️ Filtri avanzati</summary>
+    <div class="inline">
+      <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
+      <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
+    </div>
+    <div class="inline">
+      <label>
+        Durata <span class="unit">(secondi)</span>:
+        <input type="range" id="minDuration" min="0" max="7200" value="0" oninput="updateDurationRange()">
+        <input type="range" id="maxDuration" min="0" max="7200" value="7200" oninput="updateDurationRange()">
+        <span id="durationRange">0 - 7200</span>
+      </label>
+    </div>
+    <div class="inline">
+      <label>
+        Popolarità <span class="unit">(0-100)</span>:
+        <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updatePopularityRange()">
+        <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updatePopularityRange()">
+        <span id="popularityRange">0 - 100</span>
+        <span class="tooltip">❓
+          <span class="tooltiptext">La popolarità è un punteggio da 0 a 100 calcolato da Spotify in base a stream, salvataggi e tendenze. 100 = hit globale, 0 = poco noto.</span>
+        </span>
+      </label>
+    </div>
+    <div class="inline">
+      <label>Generi:</label>
+      <div class="genre-grid" id="genreList">
+        <label><input type="checkbox" value="pop" /> Pop</label>
+        <label><input type="checkbox" value="rock" /> Rock</label>
+        <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
+        <label><input type="checkbox" value="r&b" /> R&B</label>
+        <label><input type="checkbox" value="jazz" /> Jazz</label>
+        <label><input type="checkbox" value="edm" /> EDM</label>
+        <label><input type="checkbox" value="metal" /> Metal</label>
+        <label><input type="checkbox" value="classical" /> Classica</label>
+        <label><input type="checkbox" value="acoustic" /> Acustico</label>
+        <label><input type="checkbox" value="indie" /> Indie</label>
+      </div>
+      <input type="text" id="customGenres" placeholder="Altri generi separati da virgola..." style="width: 80%;" />
+    </div>
+  </details>
 
-<div class="inline">
-  <label>
-    Popolarità <span class="unit">(0-100)</span>:
-    <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updatePopularityRange()">
-    <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updatePopularityRange()">
-    <span id="popularityRange">0 - 100</span>
-    <span class="tooltip">❓
-      <span class="tooltiptext">La popolarità è un punteggio da 0 a 100 calcolato da Spotify in base a stream, salvataggi e tendenze. 100 = hit globale, 0 = poco noto.</span>
-    </span>
-  </label>
-</div>
-
-<div class="inline">
-  <label>Generi:</label>
-  <div class="genre-grid" id="genreList">
-    <label><input type="checkbox" value="pop" /> Pop</label>
-    <label><input type="checkbox" value="rock" /> Rock</label>
-    <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
-    <label><input type="checkbox" value="r&b" /> R&B</label>
-    <label><input type="checkbox" value="jazz" /> Jazz</label>
-    <label><input type="checkbox" value="edm" /> EDM</label>
-    <label><input type="checkbox" value="metal" /> Metal</label>
-    <label><input type="checkbox" value="classical" /> Classica</label>
-    <label><input type="checkbox" value="acoustic" /> Acustico</label>
-    <label><input type="checkbox" value="indie" /> Indie</label>
-  </div>
-  <input type="text" id="customGenres" placeholder="Altri generi separati da virgola..." style="width: 80%;" />
-</div>
-
-  </details>  <div style="margin-top: 2rem">
+  <div style="margin-top: 2rem">
     <button onclick="startProcessing()">🎯 Crea nuova playlist</button>
     <button id="createManualPlaylist" style="display: none;" onclick="createManualPlaylist()">📥 Crea playlist dai selezionati</button>
-  </div>  <div id="progressBarContainer"><div id="progressBar"></div></div>
+  </div>
+
+  <div id="progressBarContainer"><div id="progressBar"></div></div>
   <div id="trackSelection"></div>
-  <div id="resultList"></div>  <script>
-    function toggleAdvancedMode() {
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      document.getElementById("createManualPlaylist").style.display = mode === "manual" ? "inline-block" : "none";
-    }
+  <div id="resultList"></div>
 
-    async function createManualPlaylist() {
-      const selectedUris = Array.from(document.querySelectorAll('input.track-checkbox:checked')).map(el => el.value);
-      if (!accessToken || selectedUris.length === 0) return alert("Nessun brano selezionato o login mancante.");
-
-      const user = await (await fetch('https://api.spotify.com/v1/me', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      })).json();
-
-      const playlist = await (await fetch(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: '🎧 Playlist Manuale', public: false })
-      })).json();
-
-      for (let i = 0; i < selectedUris.length; i += 100) {
-        const chunk = selectedUris.slice(i, i + 100);
-        await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uris: chunk })
-        });
-      }
-
-      alert('✅ Playlist manuale creata con successo!');
-    }
-  </script></body>
+</body>
 </html>
