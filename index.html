@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PlaylistFinder</title>
   <style>
     body {
@@ -9,190 +9,178 @@
       color: white;
       font-family: sans-serif;
       padding: 1rem;
-      margin: 0;
       text-align: center;
-    }h1 {
-  margin-top: 1rem;
-  font-size: 1.8rem;
-}
-
-input, select, button, textarea {
-  margin: 0.5rem;
-  padding: 0.6rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: none;
-}
-
-button {
-  background-color: #1db954;
-  color: white;
-  cursor: pointer;
-}
-
-details {
-  background: #1e1e1e;
-  border-radius: 8px;
-  margin-top: 1rem;
-  padding: 1rem;
-}
-
-summary {
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.inline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.range-container {
-  width: 250px;
-  margin: auto;
-}
-
-.range-values {
-  margin-top: 0.2rem;
-  font-size: 0.9rem;
-}
-
-.select-container {
-  margin-top: 1rem;
-}
-
-#progressBarContainer {
-  width: 80%;
-  background-color: #333;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 2rem auto 1rem auto;
-  display: none;
-}
-
-#progressBar {
-  height: 20px;
-  background-color: #1db954;
-  width: 0%;
-}
-
-#loginStatus {
-  display: inline-block;
-  margin-left: 0.5rem;
-  font-size: 1.2rem;
-  color: limegreen;
-}
-
-@media (max-width: 600px) {
-  .inline {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .range-container {
-    width: 90%;
-  }
-}
-
+    }
+    input, select, button, textarea {
+      margin: 0.5rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background-color: #1db954;
+      color: white;
+      cursor: pointer;
+    }
+    details {
+      background: #1e1e1e;
+      border-radius: 8px;
+      margin-top: 1rem;
+      padding: 1rem;
+    }
+    summary {
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .inline {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .range-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .range-slider {
+      position: relative;
+      width: 200px;
+    }
+    .range-slider input[type=range] {
+      position: absolute;
+      width: 100%;
+      pointer-events: none;
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    .range-slider input::-webkit-slider-thumb {
+      pointer-events: all;
+      width: 14px;
+      height: 14px;
+      background: #1db954;
+      border-radius: 50%;
+      -webkit-appearance: none;
+    }
+    #genreSelect {
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 80%;
+      max-width: 300px;
+    }
+    .track-option {
+      background-color: #1f1f1f;
+      margin: 1rem auto;
+      padding: 1rem;
+      border-radius: 6px;
+      max-width: 700px;
+      text-align: left;
+    }
+    #progressBarContainer {
+      width: 80%;
+      margin: 1rem auto;
+      background-color: #333;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+    }
+    #progressBar {
+      height: 20px;
+      background-color: #1db954;
+      width: 0%;
+    }
   </style>
 </head>
 <body>
-  <h1>🎷 PlaylistFinder</h1>  <div>
-    <label><input type="radio" name="mode" value="auto" checked /> Automatica</label>
-    <label><input type="radio" name="mode" value="manual" /> Manuale</label>
-    <label><input type="radio" name="mode" value="originals" /> Trova originali</label>
+  <h1>🎿 PlaylistFinder</h1>  <div style="margin: 1rem 0">
+    <label><input type="radio" name="mode" value="auto" checked onchange="toggleMode()"> Automatica</label>
+    <label><input type="radio" name="mode" value="manual" onchange="toggleMode()"> Manuale</label>
+    <label><input type="radio" name="mode" value="original" onchange="toggleMode()"> Solo originali</label>
   </div>  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
-  <br/>
   <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 60%;" />
   <br/>
-  <button onclick="login()">🔐 Login con Spotify</button><span id="loginStatus"></span>  <details>
-    <summary>🎚️ Filtri avanzati</summary><div class="inline">
-  <label>Escludi parole:<br/>
-    <input type="text" id="excludeKeywords" placeholder="remix, live..." />
-  </label>
-  <label>Includi parole:<br/>
-    <input type="text" id="includeKeywords" placeholder="acoustic, piano..." />
-  </label>
+  <button onclick="login()">🔐 Login con Spotify</button>  <details>
+    <summary>🎛️ Filtri avanzati</summary>
+    <div class="inline">
+      <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
+      <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
+    </div><div class="inline range-group">
+  <label>Durata (sec): <span id="durationLabel">0 – 3600</span></label>
+  <div class="range-slider">
+    <input type="range" min="0" max="3600" value="0" id="minDuration" oninput="updateRangeLabel('duration')">
+    <input type="range" min="0" max="3600" value="3600" id="maxDuration" oninput="updateRangeLabel('duration')">
+  </div>
+</div>
+
+<div class="inline range-group">
+  <label>Popolarità (0–100): <span id="popularityLabel">0 – 100</span></label>
+  <div class="range-slider">
+    <input type="range" min="0" max="100" value="0" id="minPopularity" oninput="updateRangeLabel('popularity')">
+    <input type="range" min="0" max="100" value="100" id="maxPopularity" oninput="updateRangeLabel('popularity')">
+  </div>
 </div>
 
 <div class="inline">
-  <div>
-    <label>Durata (secondi)</label>
-    <div class="range-container">
-      <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRangeLabel('duration')" />
-      <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRangeLabel('duration')" />
-      <div class="range-values" id="durationRange">0 - 3600</div>
-    </div>
-  </div>
-
-  <div>
-    <label>Popolarità (0–100)</label>
-    <div class="range-container">
-      <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRangeLabel('popularity')" />
-      <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRangeLabel('popularity')" />
-      <div class="range-values" id="popularityRange">0 - 100</div>
-    </div>
-  </div>
-</div>
-
-<div class="select-container">
-  <label for="genreSelect">Generi:</label><br/>
-  <select id="genreSelect" multiple size="5" style="width: 60%; max-width: 400px;">
-    <option value="pop">Pop</option>
-    <option value="rock">Rock</option>
-    <option value="hip-hop">Hip-Hop</option>
-    <option value="edm">EDM</option>
-    <option value="jazz">Jazz</option>
-    <option value="classical">Classica</option>
-    <option value="lofi">Lo-fi</option>
-    <option value="acoustic">Acustico</option>
-    <option value="instrumental">Instrumental</option>
-  </select><br/>
-  <input type="text" id="customGenreInput" placeholder="Aggiungi genere personalizzato" />
-  <button onclick="addCustomGenre()">➕ Aggiungi</button>
+  <label>Generi:
+    <select id="genreSelect" multiple>
+      <option value="pop">Pop</option>
+      <option value="rock">Rock</option>
+      <option value="hip-hop">Hip-Hop</option>
+      <option value="classical">Classica</option>
+      <option value="acoustic">Acustico</option>
+      <option value="piano">Piano</option>
+      <option value="instrumental">Instrumental</option>
+      <option value="edm">EDM</option>
+      <option value="jazz">Jazz</option>
+    </select>
+    <input type="text" id="customGenres" placeholder="Altro genere (es. lo-fi)" />
+  </label>
 </div>
 
   </details>  <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🎯 Avvia analisi</button>
-  </div>  <div id="progressBarContainer"><div id="progressBar"></div></div>  <script>
+    <button onclick="startProcessing()">🎯 Trova e crea playlist</button>
+    <button onclick="createManualPlaylist()" id="createManualBtn" style="display:none;">✅ Crea da selezione</button>
+  </div>  <div id="progressBarContainer"><div id="progressBar"></div></div>
+  <div id="trackSelection"></div>  <script>
     const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
     const redirectUri = 'https://buub05.github.io/PlaylistFinder/';
-    let codeVerifier = '';
-    let accessToken = '';
+    let codeVerifier = '', accessToken = '';
 
-    function updateRangeLabel(type) {
-      const min = document.getElementById(`min${capitalize(type)}`).value;
-      const max = document.getElementById(`max${capitalize(type)}`).value;
-      document.getElementById(`${type}Range`).innerText = `${min} - ${max}`;
+    async function login() {
+      codeVerifier = generateRandomString(128);
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      localStorage.setItem('code_verifier', codeVerifier);
+      const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=playlist-modify-private playlist-modify-public&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
+      window.location.href = authUrl;
     }
 
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
+    async function handleRedirect() {
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (!code) return;
+      codeVerifier = localStorage.getItem('code_verifier');
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        code_verifier: codeVerifier
+      });
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+      const data = await res.json();
+      accessToken = data.access_token;
+      window.history.replaceState({}, document.title, redirectUri);
     }
-
-    function addCustomGenre() {
-      const input = document.getElementById('customGenreInput');
-      const value = input.value.trim();
-      if (value) {
-        const select = document.getElementById('genreSelect');
-        const option = document.createElement('option');
-        option.value = value.toLowerCase();
-        option.text = value;
-        option.selected = true;
-        select.appendChild(option);
-        input.value = '';
-      }
-    }
+    handleRedirect();
 
     function generateRandomString(length) {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-                  .map(x => chars[x % chars.length])
-                  .join('');
+      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(x => chars[x % chars.length]).join('');
     }
 
     async function generateCodeChallenge(codeVerifier) {
@@ -202,62 +190,21 @@ summary {
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
-    async function login() {
-      codeVerifier = generateRandomString(128);
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-      localStorage.setItem('code_verifier', codeVerifier);
-
-      const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=playlist-modify-public playlist-modify-private&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
-      window.location.href = authUrl;
+    function updateRangeLabel(type) {
+      const min = document.getElementById(`min${capitalize(type)}`).value;
+      const max = document.getElementById(`max${capitalize(type)}`).value;
+      document.getElementById(`${type}Label`).innerText = `${min} – ${max}`;
     }
-
-    async function handleRedirect() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (!code) return;
-
-      codeVerifier = localStorage.getItem('code_verifier');
-
-      const body = new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-        client_id: clientId,
-        code_verifier: codeVerifier
-      });
-
-      const res = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
-      });
-
-      const data = await res.json();
-      accessToken = data.access_token;
-
-      if (accessToken) {
-        document.getElementById("loginStatus").innerText = "✅";
-      }
-
-      window.history.replaceState({}, document.title, redirectUri);
-    }
-
-    handleRedirect();
-
-    function startProcessing() {
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function toggleMode() {
       const mode = document.querySelector('input[name="mode"]:checked').value;
-      if (!accessToken) {
-        alert("🔐 Devi effettuare il login.");
-        return;
-      }
-
-      if (mode === "auto") {
-        alert("🔁 Modalità automatica selezionata. (Funzione da implementare)");
-      } else if (mode === "manual") {
-        alert("✋ Modalità manuale selezionata. (Funzione da implementare)");
-      } else if (mode === "originals") {
-        alert("🧐 Modalità trova originali selezionata. (Funzione da implementare)");
-      }
+      document.getElementById("createManualBtn").style.display = mode === "manual" ? "inline-block" : "none";
+    }
+    function startProcessing() {
+      alert("🚧 Elaborazione e creazione playlist da implementare.");
+    }
+    function createManualPlaylist() {
+      alert("🚧 Funzionalità manuale in sviluppo.");
     }
   </script></body>
 </html>
