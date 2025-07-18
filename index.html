@@ -206,8 +206,8 @@
 <div class="mode-group">
   <label><input type="radio" name="mode" value="auto" checked /> Automatica</label>
   <label><input type="radio" name="mode" value="manual" /> Manuale</label>
-  <label><input type="radio" name="mode" value="original" /> Brani Originali</label>
-  <label><input type="radio" name="mode" value="filters" /> Nuova con Filtri</label>
+  <label><input type="radio" name="mode" value="original" /> Originale</label>
+  <label><input type="radio" name="mode" value="filters" /> Nuova</label>
 </div>
 
 <!-- NOME PLAYLIST -->
@@ -218,20 +218,20 @@
 
 <!-- FILTRI -->
 <details>
-  <summary>🎛️ Filtri Avanzati</summary>
+  <summary>Filtri Avanzati</summary>
 
   <details>
-    <summary>🛑 Escludi parole</summary>
+    <summary>Escludi parole</summary>
     <input type="text" id="excludeKeywords" placeholder="remix, live..." />
   </details>
 
   <details>
-    <summary>✅ Includi parole</summary>
+    <summary>Includi parole</summary>
     <input type="text" id="includeKeywords" placeholder="acoustic, piano..." />
   </details>
 
   <details>
-    <summary>🎧 Generi</summary>
+    <summary>Generi</summary>
     <div class="checkboxes" id="genreList">
       <label><input type="checkbox" value="pop" /> Pop</label>
       <label><input type="checkbox" value="rock" /> Rock</label>
@@ -247,7 +247,7 @@
 
   <!-- Durata -->
   <details>
-    <summary>⏱️ Durata (sec)</summary>
+    <summary>Durata (sec)</summary>
     <div class="slider-wrapper">
       <div class="range-labels">
         <span id="durationMinLabel">0</span>
@@ -263,7 +263,7 @@
 
   <!-- Popolarità -->
   <details>
-    <summary>📈 Popolarità (0–100)</summary>
+    <summary>Popolarità (0–100)</summary>
     <div class="slider-wrapper">
       <div class="range-labels">
         <span id="popularityMinLabel">0</span>
@@ -286,3 +286,23 @@
 
 <!-- SELEZIONE BRANI -->
 <div id="trackSelection"></div>
+
+<script>
+  function updateRangeLabels() {
+    const minD = document.getElementById('minDuration');
+    const maxD = document.getElementById('maxDuration');
+    const minP = document.getElementById('minPopularity');
+    const maxP = document.getElementById('maxPopularity');
+
+    if (+minD.value > +maxD.value) minD.value = maxD.value;
+    if (+maxD.value < +minD.value) maxD.value = minD.value;
+
+    if (+minP.value > +maxP.value) minP.value = maxP.value;
+    if (+maxP.value < +minP.value) maxP.value = minP.value;
+
+    document.getElementById('durationMinLabel').textContent = minD.value;
+    document.getElementById('durationMaxLabel').textContent = maxD.value;
+    document.getElementById('popularityMinLabel').textContent = minP.value;
+    document.getElementById('popularityMaxLabel').textContent = maxP.value;
+  }
+</script>
