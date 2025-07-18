@@ -1,151 +1,76 @@
-<!DOCTYPE html><html lang="it">
+<!DOCTYPE html>
+<html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PlaylistFinder</title>
   <style>
-    body {
-      background-color: #121212;
-      color: white;
-      font-family: sans-serif;
-      padding: 1rem;
-      margin: 0;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    input, select, button {
-      border-radius: 6px;
-      border: none;
-      font-size: 1rem;
-      padding: 0.5rem;
-    }
-    button {
-      background-color: #1db954;
-      color: white;
-      cursor: pointer;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .range-container {
-      margin: 1rem 0;
-    }
-    .range-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-      margin-top: 0.25rem;
-    }
-    .range-values {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-      color: #1db954;
-      margin-bottom: 0.3rem;
-    }
-    .dual-range {
-      position: relative;
-      height: 40px;
-    }
+    body { background:#121212; color:white; font-family:sans-serif; padding:1rem; margin:0; }
+    input, button { border:none; border-radius:6px; padding:0.5rem; font-size:1rem; }
+    button { background:#1db954; color:#fff; cursor:pointer; }
+    .row, .range-container { display:flex; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem; }
+    .row > * { flex:1; min-width:120px; }
+    #loginStatus { font-size:1.2rem; color:#1db954; margin-left:0.5rem; }
+    .dual-range { position:relative; width:250px; height:24px; }
     .dual-range input[type=range] {
-      position: absolute;
-      width: 100%;
-      pointer-events: none;
-      appearance: none;
-      height: 8px;
-      background: transparent;
+      position:absolute; width:100%; pointer-events:none;
+      -webkit-appearance:none; background:transparent; margin:0; height:8px; top:8px;
     }
     .dual-range input[type=range]::-webkit-slider-thumb {
-      pointer-events: all;
-      appearance: none;
-      height: 16px;
-      width: 16px;
-      background: #1db954;
-      border-radius: 50%;
-      border: none;
-      margin-top: -4px;
+      pointer-events:all; appearance:none; width:16px; height:16px;
+      border-radius:50%; background:#1db954; border:none;
     }
-    .dual-range .slider-track {
-      position: absolute;
-      height: 8px;
-      background: #1db954;
-      border-radius: 8px;
-      z-index: -1;
-      top: 16px;
+    .dual-range .track {
+      position:absolute; height:8px; background:#1db954;
+      border-radius:4px; top:8px; z-index:-1;
     }
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
+    .range-values { display:flex; justify-content:space-between; width:250px; color:#1db954; font-size:0.9rem; }
+    .dropdown { position:relative; display:inline-block; }
     .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: #2a2a2a;
-      min-width: 300px;
-      max-height: 250px;
-      overflow-y: auto;
-      box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
-      padding: 1rem;
-      z-index: 1;
-      bottom: 100%;
-      left: 0;
+      display:none; position:absolute; bottom:100%; left:0;
+      background:#1e1e1e; width:320px; max-height:300px;
+      overflow-y:auto; padding:1rem; border-radius:6px; z-index:10;
     }
-    .dropdown:hover .dropdown-content {
-      display: block;
-    }
-    .genre-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.3rem 1rem;
-    }
-    .genre-grid input[type="checkbox"] {
-      accent-color: #1db954;
-    }
-    #loginStatus {
-      font-size: 1.2rem;
-      margin-left: 0.5rem;
-    }
+    .dropdown:hover .dropdown-content { display:block; }
+    .genre-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.3rem 1rem; }
+    .genre-grid input[type=checkbox] { accent-color:#1db954; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🎧 PlaylistFinder</h1>
-  </header>  <div class="row">
-    <button onclick="login()">🔐 Login con Spotify</button>
+  <h1>🎧 PlaylistFinder</h1>
+  <div class="row">
+    <button onclick="login()">🔐 Login Spotify</button>
     <span id="loginStatus">❌</span>
-    <input type="text" id="playlistLink" placeholder="Link playlist Spotify" style="flex: 1;" />
-  </div>  <div class="range-container">
+    <input type="text" id="playlistLink" placeholder="Link playlist Spotify"/>
+  </div>
+  <!-- Slider Durata -->
+  <div class="range-container">
     <div class="range-values">
       <span id="durationValueMin">0s</span>
       <span id="durationValueMax">3600s</span>
     </div>
-    <label for="duration">🎵 Durata</label>
     <div class="dual-range">
-      <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateDurationSlider()">
-      <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateDurationSlider()">
-      <div class="slider-track" id="durationTrack"></div>
+      <div class="track" id="durationTrack"></div>
+      <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateDuration()">
+      <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateDuration()">
     </div>
-  </div>  <div class="range-container">
+  </div>
+  <!-- Slider Popolarità -->
+  <div class="range-container">
     <div class="range-values">
-      <span id="popularityValueMin">0</span>
-      <span id="popularityValueMax">100</span>
+      <span id="popValueMin">0</span>
+      <span id="popValueMax">100</span>
     </div>
-    <label for="popularity">📈 Popolarità</label>
     <div class="dual-range">
-      <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updatePopularitySlider()">
-      <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updatePopularitySlider()">
-      <div class="slider-track" id="popularityTrack"></div>
+      <div class="track" id="popTrack"></div>
+      <input type="range" id="minPop" min="0" max="100" value="0" oninput="updatePop()">
+      <input type="range" id="maxPop" min="0" max="100" value="100" oninput="updatePop()">
     </div>
-  </div>  <div class="dropdown">
+  </div>
+  <!-- Generi -->
+  <div class="dropdown">
     <button>🎼 Filtra per genere</button>
     <div class="dropdown-content">
-      <div class="genre-grid" id="genreList">
+      <div class="genre-grid">
         <label><input type="checkbox" value="pop"> Pop</label>
         <label><input type="checkbox" value="rock"> Rock</label>
         <label><input type="checkbox" value="hip-hop"> Hip-Hop</label>
@@ -155,8 +80,7 @@
         <label><input type="checkbox" value="edm"> EDM</label>
         <label><input type="checkbox" value="lofi"> Lo-Fi</label>
       </div>
-      <div style="margin-top:1rem">
-        <input type="text" id="customGenres" placeholder="Altri generi... (es. ambient, folk...)" style="width: 100%;" />
-      </div>
+      <input type="text" id="customGenres" placeholder="Altri generi..." style="width:100%; margin-top:0.5rem"/>
     </div>
-  </div><!-- JS verrà aggiunto nella Parte 2 -->
+  </div>
+<!-- La PARTE 2 (JS) segue qui... -->
