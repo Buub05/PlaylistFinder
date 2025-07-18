@@ -34,7 +34,7 @@
       border: none;
     }
 
-    input[type="text"], input[type="number"] {
+    input[type="text"] {
       width: 220px;
     }
 
@@ -50,52 +50,6 @@
 
     .section {
       margin: 1.5rem 0;
-    }
-
-    .slider-container {
-      margin-top: 0.8rem;
-      text-align: left;
-      max-width: 350px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .slider-label {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.3rem;
-    }
-
-    .range {
-      width: 100%;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 6px;
-      background: #444;
-      border-radius: 3px;
-      outline: none;
-      position: relative;
-    }
-
-    .range::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      background: #1db954;
-      border-radius: 50%;
-      cursor: pointer;
-      position: relative;
-      z-index: 2;
-    }
-
-    .checkboxes {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-      text-align: left;
-      max-width: 400px;
-      margin: 1rem auto;
     }
 
     details {
@@ -114,8 +68,13 @@
       color: #1db954;
     }
 
-    #addLinkBtn {
-      background-color: #2ecc71;
+    .checkboxes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      text-align: left;
+      max-width: 400px;
+      margin: 0.5rem 0;
     }
 
     .mode-group {
@@ -134,9 +93,38 @@
       margin-top: 1.5rem;
     }
 
-    #loginStatus {
-      font-size: 1.3rem;
-      margin-left: 0.3rem;
+    .slider-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .range {
+      flex: 1;
+      appearance: none;
+      height: 6px;
+      background: #444;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .range::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #1db954;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
     }
 
     #trackSelection {
@@ -154,13 +142,9 @@
       margin-bottom: 1rem;
     }
 
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    select {
-      width: 100%;
+    #loginStatus {
+      font-size: 1.3rem;
+      margin-left: 0.3rem;
     }
   </style>
 </head>
@@ -168,16 +152,16 @@
 
   <h1>🎧 PlaylistFinder</h1>
 
-  <!-- LOGIN SECTION -->
+  <!-- LOGIN -->
   <div class="row">
     <button onclick="login()" id="loginBtn">🔐 Login con Spotify</button>
     <span id="loginStatus">❌</span>
   </div>
 
-  <!-- PLAYLIST LINKS -->
+  <!-- PLAYLIST LINK + AGGIUNGI -->
   <div class="row">
     <input type="text" id="playlistLink0" placeholder="Link playlist Spotify" />
-    <button id="addLinkBtn" onclick="addPlaylistInput()">➕ Aggiungi link</button>
+    <button onclick="addPlaylistInput()">➕ Aggiungi link</button>
   </div>
   <div id="additionalLinks"></div>
 
@@ -195,27 +179,7 @@
     <input type="text" id="playlistName" value="Playlist_1" />
   </div>
 
-  <!-- DURATA -->
-  <div class="slider-container">
-    <div class="slider-label">
-      <label>Durata (sec):</label>
-      <span id="durationRangeLabel">0 - 3600</span>
-    </div>
-    <input type="range" class="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRangeLabels()" />
-    <input type="range" class="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRangeLabels()" />
-  </div>
-
-  <!-- POPOLARITÀ -->
-  <div class="slider-container">
-    <div class="slider-label">
-      <label>Popolarità (0-100):</label>
-      <span id="popularityRangeLabel">0 - 100</span>
-    </div>
-    <input type="range" class="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRangeLabels()" />
-    <input type="range" class="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRangeLabels()" />
-  </div>
-
-  <!-- FILTRI AVANZATI -->
+  <!-- FILTRI -->
   <details>
     <summary>🎛️ Filtri Avanzati</summary>
 
@@ -230,7 +194,7 @@
     </details>
 
     <details>
-      <summary>🎧 Generi comuni</summary>
+      <summary>🎧 Generi</summary>
       <div class="checkboxes" id="genreList">
         <label><input type="checkbox" value="pop" /> Pop</label>
         <label><input type="checkbox" value="rock" /> Rock</label>
@@ -241,11 +205,29 @@
         <label><input type="checkbox" value="instrumental" /> Instrumental</label>
         <label><input type="checkbox" value="edm" /> EDM</label>
       </div>
+      <input type="text" id="customGenres" placeholder="Altri generi (es. lo-fi, trap...)" />
     </details>
 
     <details>
-      <summary>➕ Generi personalizzati</summary>
-      <input type="text" id="customGenres" placeholder="es: indie, lo-fi..." />
+      <summary>⏱️ Durata (sec)</summary>
+      <div class="slider-wrapper">
+        <div class="slider-container">
+          <input type="range" class="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRangeLabels()" />
+          <input type="range" class="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRangeLabels()" />
+        </div>
+        <span id="durationRangeLabel">0 - 3600</span>
+      </div>
+    </details>
+
+    <details>
+      <summary>📈 Popolarità (0–100)</summary>
+      <div class="slider-wrapper">
+        <div class="slider-container">
+          <input type="range" class="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRangeLabels()" />
+          <input type="range" class="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRangeLabels()" />
+        </div>
+        <span id="popularityRangeLabel">0 - 100</span>
+      </div>
     </details>
   </details>
 
@@ -255,5 +237,5 @@
     <button onclick="exportCSV()">📄 Esporta CSV</button>
   </div>
 
-  <!-- AREA TRACK SELECTION (manual mode) -->
+  <!-- SELEZIONE MANUALE -->
   <div id="trackSelection"></div>
