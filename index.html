@@ -1,206 +1,183 @@
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html><html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlaylistFinder</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
   <style>
-    body {
-      background-color: #121212;
-      color: white;
-      font-family: sans-serif;
-      padding: 1rem;
-      text-align: center;
+    :root {
+      --green: #1db954;
+      --dark: #121212;
+      --mid-dark: #1e1e1e;
+      --light: #ffffff;
+      --gray: #888;
     }
-    input, select, button {
-      margin: 0.4rem;
-      padding: 0.5rem;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
+    }
+    input, select, button, textarea {
       font-size: 1rem;
-      border-radius: 6px;
+      padding: 0.6rem;
+      border-radius: 5px;
       border: none;
+      margin: 0.5rem 0;
     }
     button {
-      background-color: #1db954;
+      background-color: var(--green);
       color: white;
       cursor: pointer;
-    }
-    button.add-link {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
     }
     .inline {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.8rem;
       flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
     }
-    .checkmark {
-      color: #1db954;
-      font-size: 1.3rem;
-      margin-left: 0.4rem;
-    }
-    .filter-section {
-      background-color: #1e1e1e;
-      border-radius: 10px;
+    .section {
+      background: var(--mid-dark);
       padding: 1rem;
-      max-width: 800px;
-      margin: 1rem auto;
-      text-align: left;
+      border-radius: 10px;
+      margin-bottom: 1rem;
     }
-    .filter-section summary {
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1.1rem;
+    .section h3 {
+      margin-top: 0;
     }
-    .slider-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
     }
     .range-labels {
       display: flex;
       justify-content: space-between;
-      width: 100%;
       font-size: 0.9rem;
+      color: var(--gray);
     }
-    .range-wrapper {
+    .range-slider {
       position: relative;
-      width: 100%;
+      height: 30px;
     }
-    input[type=range].dual {
+    .range-slider input[type=range] {
       position: absolute;
       width: 100%;
-      appearance: none;
-      background: transparent;
       pointer-events: none;
-      height: 35px;
-    }
-    input[type=range].dual::-webkit-slider-thumb {
-      pointer-events: auto;
+      -webkit-appearance: none;
       appearance: none;
-      height: 15px;
-      width: 15px;
+      height: 8px;
+      background: transparent;
+    }
+    .range-slider input::-webkit-slider-thumb {
+      pointer-events: auto;
+      -webkit-appearance: none;
+      height: 20px;
+      width: 20px;
+      background: var(--green);
       border-radius: 50%;
-      background: #1db954;
-      cursor: pointer;
-    }
-    .dropdown-checkboxes {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.3rem 1rem;
-    }
-    .dropdown-content {
-      padding: 0.5rem;
     }
     .dropdown {
-      text-align: left;
-      margin: 1rem auto;
-      max-width: 700px;
+      position: relative;
     }
-    .dropdown label {
-      display: block;
-    }
-    .mode-select {
-      margin-top: 1rem;
-    }
-    .track-option {
-      background: #1e1e1e;
-      margin: 1rem auto;
+    .dropdown-content {
+      position: absolute;
+      top: auto;
+      bottom: 100%;
+      left: 0;
+      background-color: var(--mid-dark);
+      border: 1px solid #333;
       padding: 1rem;
       border-radius: 8px;
-      max-width: 800px;
-      text-align: left;
+      display: none;
+      z-index: 10;
+      width: 100%;
+    }
+    .dropdown.open .dropdown-content {
+      display: block;
+    }
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .login-status {
+      color: var(--green);
+      font-weight: bold;
+      margin-left: 0.5rem;
+    }
+    @media (max-width: 600px) {
+      .inline {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>🎧 PlaylistFinder</h1>
-
-  <div class="inline">
-    <button onclick="login()">🔐 Login</button>
-    <span id="loginStatus"></span>
-  </div>
-
-  <div class="inline" id="playlistInputs">
-    <input type="text" class="playlist-link" placeholder="Link playlist Spotify" />
-    <button class="add-link" onclick="addPlaylistInput()">➕</button>
-  </div>
-
-  <div class="inline mode-select">
-    <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()"> Automatica</label>
-    <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()"> Manuale</label>
-    <label><input type="radio" name="mode" value="original" onchange="toggleAdvancedMode()"> Originale</label>
-    <label><input type="radio" name="mode" value="new" onchange="toggleAdvancedMode()"> Nuova</label>
-  </div>
-
-  <div class="inline">
+  <h1>🎧 PlaylistFinder</h1>  <div class="section inline">
+    <button onclick="login()">🔐 Login con Spotify</button>
+    <span id="loginStatus" class="login-status">Non connesso</span>
+  </div>  <div class="section inline">
+    <input type="text" id="playlistLink0" placeholder="Link playlist Spotify" style="flex: 1;" />
+    <button onclick="addPlaylistField()">➕</button>
+  </div>  <div class="section inline">
+    <label><input type="radio" name="mode" value="auto" checked> Automatica</label>
+    <label><input type="radio" name="mode" value="manual"> Manuale</label>
+    <label><input type="radio" name="mode" value="original"> Originale</label>
+    <label><input type="radio" name="mode" value="new"> Nuova</label>
+  </div>  <div class="section inline">
     <label for="playlistName">Nome:</label>
-    <input type="text" id="playlistName" value="Playlist_1" style="width: 250px;" />
-  </div>
-
-  <details class="filter-section">
-    <summary>Filtri</summary>
+    <input type="text" id="playlistName" value="Playlist_1">
+  </div>  <div class="section dropdown" onclick="toggleDropdown(this)">
+    <strong>🎛️ Filtri</strong>
     <div class="dropdown-content">
-
-      <div class="inline">
-        <label>Parole incluse:
-          <input type="text" id="includeKeywords" placeholder="es: piano, cover" />
-        </label>
+      <div class="filters">
         <label>Parole escluse:
-          <input type="text" id="excludeKeywords" placeholder="es: remix, live" />
+          <input type="text" id="excludeKeywords" placeholder="remix, live...">
+        </label>
+        <label>Parole incluse:
+          <input type="text" id="includeKeywords" placeholder="acoustic, piano...">
+        </label>
+        <label>Generi comuni:
+          <div class="genre-grid" id="genreList">
+            <label><input type="checkbox" value="pop"> Pop</label>
+            <label><input type="checkbox" value="rock"> Rock</label>
+            <label><input type="checkbox" value="hip-hop"> Hip-Hop</label>
+            <label><input type="checkbox" value="classical"> Classica</label>
+            <label><input type="checkbox" value="acoustic"> Acustico</label>
+            <label><input type="checkbox" value="jazz"> Jazz</label>
+          </div>
+        </label>
+        <label>Generi personalizzati:
+          <input type="text" id="customGenres" placeholder="es. lo-fi, trap">
+        </label>
+        <label>Durata (sec):
+          <div class="range-labels"><span id="durationMinLabel">0</span><span id="durationMaxLabel">3600</span></div>
+          <div class="range-slider">
+            <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRange('duration')">
+            <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRange('duration')">
+          </div>
+        </label>
+        <label>Popolarità:
+          <div class="range-labels"><span id="popularityMinLabel">0</span><span id="popularityMaxLabel">100</span></div>
+          <div class="range-slider">
+            <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRange('popularity')">
+            <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRange('popularity')">
+          </div>
         </label>
       </div>
-
-      <div class="slider-container">
-        <label>🎚️ Durata (secondi)</label>
-        <div class="range-wrapper">
-          <input type="range" min="0" max="3600" value="0" id="minDuration" class="dual" oninput="updateDurationLabel()" />
-          <input type="range" min="0" max="3600" value="3600" id="maxDuration" class="dual" oninput="updateDurationLabel()" />
-        </div>
-        <div class="range-labels">
-          <span id="durationLabel">0 - 3600</span>
-        </div>
-      </div>
-
-      <div class="slider-container">
-        <label>🔥 Popolarità</label>
-        <div class="range-wrapper">
-          <input type="range" min="0" max="100" value="0" id="minPopularity" class="dual" oninput="updatePopularityLabel()" />
-          <input type="range" min="0" max="100" value="100" id="maxPopularity" class="dual" oninput="updatePopularityLabel()" />
-        </div>
-        <div class="range-labels">
-          <span id="popularityLabel">0 - 100</span>
-        </div>
-      </div>
-
-      <div class="dropdown">
-        <label>🎵 Filtra per genere</label>
-        <div class="dropdown-checkboxes" id="genreList">
-          <label><input type="checkbox" value="pop" /> Pop</label>
-          <label><input type="checkbox" value="rock" /> Rock</label>
-          <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
-          <label><input type="checkbox" value="classical" /> Classica</label>
-          <label><input type="checkbox" value="acoustic" /> Acustico</label>
-          <label><input type="checkbox" value="edm" /> EDM</label>
-          <label><input type="checkbox" value="piano" /> Piano</label>
-          <label><input type="checkbox" value="instrumental" /> Instrumental</label>
-        </div>
-        <label style="margin-top: 0.5rem">Altri generi: <input type="text" id="customGenres" placeholder="es: indie, lo-fi" /></label>
-      </div>
-
     </div>
-  </details>
-
-  <div style="margin-top: 1rem">
+  </div>  <div class="section inline">
     <button onclick="startProcessing()">🎯 Avvia</button>
-    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">✅ Conferma selezione</button>
-  </div>
-
-  <div id="progressBarContainer" style="width: 80%; background: #333; height: 20px; border-radius: 10px; overflow: hidden; margin: 1rem auto; display: none;">
-    <div id="progressBar" style="background: #1db954; height: 100%; width: 0%;"></div>
-  </div>
-
-  <div id="trackSelection"></div>
+    <button onclick="createManualPlaylist()" id="manualButton" style="display:none">📥 Crea manuale</button>
+    <button onclick="exportCSV()">📄 Esporta CSV</button>
+  </div>  <div id="progressBarContainer" style="display:none; width: 100%; background: #333; border-radius: 8px; overflow: hidden;">
+    <div id="progressBar" style="height: 20px; background-color: var(--green); width: 0%;"></div>
+  </div>  <div id="trackSelection"></div>
+  <div id="resultList"></div>  <script>
+    // JS interattivo incluso nella seconda parte (Parte 2/2)
+  </script></body>
+</html>
