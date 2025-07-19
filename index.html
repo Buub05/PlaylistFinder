@@ -1,183 +1,233 @@
-<!DOCTYPE html><html lang="it">
+<!DOCTYPE html>
+<html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PlaylistFinder</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
   <style>
-    :root {
-      --green: #1db954;
-      --dark: #121212;
-      --mid-dark: #1e1e1e;
-      --light: #ffffff;
-      --gray: #888;
-    }
-    * { box-sizing: border-box; }
     body {
+      background-color: #121212;
+      color: white;
+      font-family: sans-serif;
+      padding: 1rem;
       margin: 0;
-      padding: 2rem;
-      font-family: 'Roboto', sans-serif;
-      background-color: var(--dark);
-      color: var(--light);
+      text-align: center;
     }
+
     input, select, button, textarea {
-      font-size: 1rem;
+      margin: 0.4rem;
       padding: 0.6rem;
-      border-radius: 5px;
+      font-size: 1rem;
+      border-radius: 6px;
       border: none;
-      margin: 0.5rem 0;
     }
+
     button {
-      background-color: var(--green);
+      background-color: #1db954;
       color: white;
       cursor: pointer;
     }
-    .inline {
+
+    .flex-row {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 1rem;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
-    .section {
-      background: var(--mid-dark);
+
+    .filters-container {
+      margin-top: 1rem;
+      background: #1e1e1e;
       padding: 1rem;
       border-radius: 10px;
-      margin-bottom: 1rem;
+      display: inline-block;
+      text-align: left;
     }
-    .section h3 {
-      margin-top: 0;
+
+    .range-wrapper {
+      margin: 0.5rem 0;
     }
-    .filters {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
+
+    .range-wrapper label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
     }
-    .range-labels {
+
+    .range-values {
       display: flex;
       justify-content: space-between;
       font-size: 0.9rem;
-      color: var(--gray);
+      color: #ccc;
     }
-    .range-slider {
-      position: relative;
-      height: 30px;
+
+    #genreList {
+      columns: 2;
+      column-gap: 1rem;
     }
-    .range-slider input[type=range] {
-      position: absolute;
-      width: 100%;
-      pointer-events: none;
+
+    .dropdown-section {
+      margin-top: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+    }
+
+    details {
+      margin: 0 auto;
+      max-width: 600px;
+      background-color: #2a2a2a;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .slider {
       -webkit-appearance: none;
       appearance: none;
-      height: 8px;
-      background: transparent;
+      height: 5px;
+      background: #555;
+      outline: none;
+      border-radius: 5px;
     }
-    .range-slider input::-webkit-slider-thumb {
-      pointer-events: auto;
+
+    input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      height: 20px;
-      width: 20px;
-      background: var(--green);
+      height: 16px;
+      width: 16px;
       border-radius: 50%;
+      background: #1db954;
+      cursor: pointer;
     }
-    .dropdown {
-      position: relative;
+
+    .section-title {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
     }
-    .dropdown-content {
-      position: absolute;
-      top: auto;
-      bottom: 100%;
-      left: 0;
-      background-color: var(--mid-dark);
-      border: 1px solid #333;
-      padding: 1rem;
-      border-radius: 8px;
-      display: none;
-      z-index: 10;
-      width: 100%;
+
+    .mode-selector label {
+      margin-right: 1rem;
     }
-    .dropdown.open .dropdown-content {
-      display: block;
+
+    .section {
+      margin-top: 1.5rem;
     }
-    .genre-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
+
+    .tick {
+      color: lime;
+      font-size: 1.3rem;
     }
+
     .login-status {
-      color: var(--green);
-      font-weight: bold;
-      margin-left: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
     }
-    @media (max-width: 600px) {
-      .inline {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+
+    #playlistLinks input {
+      display: block;
+      width: 90%;
+      margin: 0.2rem auto;
     }
   </style>
 </head>
 <body>
-  <h1>🎧 PlaylistFinder</h1>  <div class="section inline">
+  <h1>🎧 PlaylistFinder</h1>
+
+  <!-- Login + Stato -->
+  <div class="login-status">
     <button onclick="login()">🔐 Login con Spotify</button>
-    <span id="loginStatus" class="login-status">Non connesso</span>
-  </div>  <div class="section inline">
-    <input type="text" id="playlistLink0" placeholder="Link playlist Spotify" style="flex: 1;" />
-    <button onclick="addPlaylistField()">➕</button>
-  </div>  <div class="section inline">
-    <label><input type="radio" name="mode" value="auto" checked> Automatica</label>
-    <label><input type="radio" name="mode" value="manual"> Manuale</label>
-    <label><input type="radio" name="mode" value="original"> Originale</label>
-    <label><input type="radio" name="mode" value="new"> Nuova</label>
-  </div>  <div class="section inline">
-    <label for="playlistName">Nome:</label>
-    <input type="text" id="playlistName" value="Playlist_1">
-  </div>  <div class="section dropdown" onclick="toggleDropdown(this)">
-    <strong>🎛️ Filtri</strong>
-    <div class="dropdown-content">
-      <div class="filters">
-        <label>Parole escluse:
-          <input type="text" id="excludeKeywords" placeholder="remix, live...">
-        </label>
-        <label>Parole incluse:
-          <input type="text" id="includeKeywords" placeholder="acoustic, piano...">
-        </label>
-        <label>Generi comuni:
-          <div class="genre-grid" id="genreList">
-            <label><input type="checkbox" value="pop"> Pop</label>
-            <label><input type="checkbox" value="rock"> Rock</label>
-            <label><input type="checkbox" value="hip-hop"> Hip-Hop</label>
-            <label><input type="checkbox" value="classical"> Classica</label>
-            <label><input type="checkbox" value="acoustic"> Acustico</label>
-            <label><input type="checkbox" value="jazz"> Jazz</label>
-          </div>
-        </label>
-        <label>Generi personalizzati:
-          <input type="text" id="customGenres" placeholder="es. lo-fi, trap">
-        </label>
-        <label>Durata (sec):
-          <div class="range-labels"><span id="durationMinLabel">0</span><span id="durationMaxLabel">3600</span></div>
-          <div class="range-slider">
-            <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRange('duration')">
-            <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRange('duration')">
-          </div>
-        </label>
-        <label>Popolarità:
-          <div class="range-labels"><span id="popularityMinLabel">0</span><span id="popularityMaxLabel">100</span></div>
-          <div class="range-slider">
-            <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRange('popularity')">
-            <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRange('popularity')">
-          </div>
-        </label>
-      </div>
+    <span id="loginStatus">❌</span>
+  </div>
+
+  <!-- Link playlist + aggiunta -->
+  <div class="flex-row" style="margin-top: 1rem;">
+    <div id="playlistLinks">
+      <input type="text" placeholder="Link playlist Spotify" />
     </div>
-  </div>  <div class="section inline">
-    <button onclick="startProcessing()">🎯 Avvia</button>
-    <button onclick="createManualPlaylist()" id="manualButton" style="display:none">📥 Crea manuale</button>
-    <button onclick="exportCSV()">📄 Esporta CSV</button>
-  </div>  <div id="progressBarContainer" style="display:none; width: 100%; background: #333; border-radius: 8px; overflow: hidden;">
-    <div id="progressBar" style="height: 20px; background-color: var(--green); width: 0%;"></div>
-  </div>  <div id="trackSelection"></div>
-  <div id="resultList"></div>  <script>
-    // JS interattivo incluso nella seconda parte (Parte 2/2)
-  </script></body>
-</html>
+    <button onclick="addPlaylistInput()">➕ Aggiungi link</button>
+  </div>
+
+  <!-- Nome playlist -->
+  <div class="flex-row">
+    <label for="playlistName">Nome:</label>
+    <input type="text" id="playlistName" placeholder="Playlist_1" value="Playlist_1" />
+  </div>
+
+  <!-- Modalità -->
+  <div class="flex-row mode-selector">
+    <label><input type="radio" name="mode" value="auto" checked onchange="toggleMode()" /> Automatica</label>
+    <label><input type="radio" name="mode" value="manual" onchange="toggleMode()" /> Manuale</label>
+    <label><input type="radio" name="mode" value="original" onchange="toggleMode()" /> Originale</label>
+    <label><input type="radio" name="mode" value="new" onchange="toggleMode()" /> Nuova</label>
+  </div>
+
+  <!-- Filtri -->
+  <details class="dropdown-section" open>
+    <summary>🎛️ Filtri avanzati</summary>
+    <div class="filters-container">
+
+      <!-- Include/Exclude -->
+      <div class="flex-row">
+        <input type="text" id="includeKeywords" placeholder="Parole da includere (es. piano)" />
+        <input type="text" id="excludeKeywords" placeholder="Parole da escludere (es. remix)" />
+      </div>
+
+      <!-- Durata -->
+      <div class="range-wrapper">
+        <label>Durata (sec):</label>
+        <div class="flex-row">
+          <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateDurationLabel()" />
+          <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateDurationLabel()" />
+        </div>
+        <div class="range-values">
+          <span id="minDurationVal">0</span>
+          <span id="maxDurationVal">3600</span>
+        </div>
+      </div>
+
+      <!-- Popolarità -->
+      <div class="range-wrapper">
+        <label>Popolarità:</label>
+        <div class="flex-row">
+          <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updatePopularityLabel()" />
+          <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updatePopularityLabel()" />
+        </div>
+        <div class="range-values">
+          <span id="minPopularityVal">0</span>
+          <span id="maxPopularityVal">100</span>
+        </div>
+      </div>
+
+      <!-- Generi -->
+      <div class="range-wrapper">
+        <label>Filtra per genere:</label>
+        <div id="genreList">
+          <label><input type="checkbox" value="pop" /> Pop</label>
+          <label><input type="checkbox" value="rock" /> Rock</label>
+          <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
+          <label><input type="checkbox" value="classical" /> Classica</label>
+          <label><input type="checkbox" value="jazz" /> Jazz</label>
+          <label><input type="checkbox" value="edm" /> EDM</label>
+          <label><input type="checkbox" value="acoustic" /> Acustico</label>
+          <label><input type="checkbox" value="piano" /> Piano</label>
+        </div>
+        <input type="text" id="customGenres" placeholder="Generi personalizzati (es. lofi, trap)" />
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Pulsanti principali -->
+  <div class="section">
+    <button onclick="startProcessing()">🎯 Avvia generazione</button>
+    <button onclick="createManualPlaylist()" id="manualConfirmBtn" style="display: none;">✅ Conferma selezione</button>
+  </div>
+
+  <!-- Selezione brani manuale -->
+  <div id="trackSelection" class="section"></div>
