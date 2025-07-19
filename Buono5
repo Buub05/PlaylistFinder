@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlaylistFinder</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: sans-serif;
+      padding: 2rem;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+    }
+    .flex-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .input-block, .slider-block {
+      margin-bottom: 1rem;
+    }
+    input, button, select, textarea {
+      font-size: 1rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background-color: #1db954;
+      color: white;
+      cursor: pointer;
+    }
+    .dropdown {
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .range-slider {
+      position: relative;
+      width: 300px;
+      height: 40px;
+    }
+    .range-slider input[type="range"] {
+      position: absolute;
+      width: 100%;
+      pointer-events: none;
+      -webkit-appearance: none;
+      height: 6px;
+      background: transparent;
+    }
+    .range-slider input[type="range"]::-webkit-slider-thumb {
+      pointer-events: all;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1db954;
+      -webkit-appearance: none;
+    }
+    .range-slider-track {
+      position: absolute;
+      height: 6px;
+      background: #444;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      border-radius: 3px;
+    }
+    .range-slider-progress {
+      position: absolute;
+      height: 6px;
+      background: #1db954;
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 3px;
+    }
+    .section-title {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎧 PlaylistFinder</h1>  <div class="flex-row">
+    <input type="text" id="playlistLink" placeholder="Link playlist Spotify" style="flex:1;">
+    <button onclick="login()">Login</button>
+    <span id="loginStatus">❌</span>
+  </div>  <div class="flex-row">
+    <label><input type="radio" name="mode" value="auto" checked> Automatica</label>
+    <label><input type="radio" name="mode" value="manual"> Manuale</label>
+    <label><input type="radio" name="mode" value="original"> Originale</label>
+    <label><input type="radio" name="mode" value="filtered"> Nuova da filtri</label>
+  </div>  <div class="input-block">
+    <label for="playlistName">Nome:</label>
+    <input type="text" id="playlistName" placeholder="Playlist_1" />
+  </div>  <div class="dropdown">
+    <div class="input-block">
+      <label for="includeWords">Includi parole:</label>
+      <input type="text" id="includeWords" placeholder="acoustic, piano...">
+    </div>
+    <div class="input-block">
+      <label for="excludeWords">Escludi parole:</label>
+      <input type="text" id="excludeWords" placeholder="remix, live...">
+    </div><div class="input-block">
+  <label for="genres">Filtra per genere:</label>
+  <select multiple id="genres" size="6" style="width: 100%; max-width: 300px;">
+    <option value="pop">Pop</option>
+    <option value="rock">Rock</option>
+    <option value="hip-hop">Hip-Hop</option>
+    <option value="classical">Classica</option>
+    <option value="acoustic">Acustico</option>
+    <option value="edm">EDM</option>
+    <option value="jazz">Jazz</option>
+    <option value="indie">Indie</option>
+    <option value="trap">Trap</option>
+  </select>
+  <input type="text" id="customGenres" placeholder="Aggiungi genere personalizzato">
+</div>
+
+<div class="slider-block">
+  <label>Durata (secondi): <span id="durationLabel"></span></label>
+  <div class="range-slider" id="durationSlider">
+    <div class="range-slider-track"></div>
+    <div class="range-slider-progress" id="durationProgress"></div>
+    <input type="range" id="durationMin" min="0" max="3600" value="0">
+    <input type="range" id="durationMax" min="0" max="3600" value="3600">
+  </div>
+</div>
+
+<div class="slider-block">
+  <label>Popolarità: <span id="popularityLabel"></span></label>
+  <div class="range-slider" id="popularitySlider">
+    <div class="range-slider-track"></div>
+    <div class="range-slider-progress" id="popularityProgress"></div>
+    <input type="range" id="popMin" min="0" max="100" value="0">
+    <input type="range" id="popMax" min="0" max="100" value="100">
+  </div>
+</div>
+
+  </div>  <script>
+    const durationMin = document.getElementById('durationMin');
+    const durationMax = document.getElementById('durationMax');
+    const durationProgress = document.getElementById('durationProgress');
+    const durationLabel = document.getElementById('durationLabel');
+
+    const popMin = document.getElementById('popMin');
+    const popMax = document.getElementById('popMax');
+    const popularityProgress = document.getElementById('popularityProgress');
+    const popularityLabel = document.getElementById('popularityLabel');
+
+    function updateSlider(minEl, maxEl, progressEl, labelEl, maxRange) {
+      const min = parseInt(minEl.value);
+      const max = parseInt(maxEl.value);
+      if (min > max) minEl.value = max;
+      const percentMin = (min / maxRange) * 100;
+      const percentMax = (max / maxRange) * 100;
+      progressEl.style.left = percentMin + '%';
+      progressEl.style.right = (100 - percentMax) + '%';
+      labelEl.textContent = `${min} - ${max}`;
+    }
+
+    durationMin.addEventListener('input', () => updateSlider(durationMin, durationMax, durationProgress, durationLabel, 3600));
+    durationMax.addEventListener('input', () => updateSlider(durationMin, durationMax, durationProgress, durationLabel, 3600));
+    popMin.addEventListener('input', () => updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100));
+    popMax.addEventListener('input', () => updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100));
+
+    updateSlider(durationMin, durationMax, durationProgress, durationLabel, 3600);
+    updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100);
+  </script></body>
+</html>
