@@ -1,137 +1,167 @@
 <!DOCTYPE html><html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PlaylistFinder</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/distribute/nouislider.min.css"/>
   <style>
     body {
+      font-family: Arial, sans-serif;
       background-color: #121212;
       color: white;
-      font-family: sans-serif;
-      padding: 2rem;
+      padding: 20px;
       text-align: center;
     }
-    input, select, button, textarea {
-      margin: 0.5rem;
-      padding: 0.6rem;
-      font-size: 1rem;
+    select, input, button {
+      margin: 8px;
+      padding: 8px;
       border-radius: 6px;
       border: none;
+      font-size: 1rem;
     }
     button {
       background-color: #1db954;
       color: white;
       cursor: pointer;
     }
-    .inline {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .genre-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.3rem 1rem;
-      justify-items: start;
-      text-align: left;
-      margin: 1rem auto;
-      max-width: 400px;
-    }
     details {
       background: #1e1e1e;
       border-radius: 8px;
       margin-top: 1rem;
       padding: 1rem;
+      text-align: left;
     }
     summary {
-      font-size: 1.2rem;
-      font-weight: bold;
       cursor: pointer;
+      font-size: 1.1rem;
     }
-    #trackSelection {
-      margin-top: 2rem;
-      text-align: left;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
+    #genreMenu {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.4rem 1rem;
+      max-height: 300px;
     }
-    .track-option {
-      background-color: #1e1e1e;
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 1rem;
+    .slider-container {
+      margin: 20px auto;
+      max-width: 500px;
     }
-    input[type=range]::-webkit-slider-thumb {
-      background: #1db954;
+    .progress {
+      width: 80%;
+      height: 20px;
+      margin: 20px auto;
+      background-color: #333;
+      border-radius: 10px;
+      overflow: hidden;
     }
-    input[type=range]::-moz-range-thumb {
-      background: #1db954;
+    .progress-bar {
+      height: 100%;
+      background-color: #1db954;
+      width: 0%;
+      transition: width 0.3s;
     }
   </style>
 </head>
-<body>
-  <h1>🎧 PlaylistFinder</h1>  <div class="inline">
-    <button onclick="login()">🔐 Login con Spotify</button>
-    <span id="loginStatus" style="font-size: 1.5rem; margin-left: 0.5rem;">❌</span>
-  </div>  <div class="inline" id="playlistLinks">
-    <input type="text" class="playlist-input" placeholder="Link playlist Spotify" style="width: 60%;" />
-    <button onclick="addPlaylistInput()">➕</button>
-  </div>  <div class="inline">
-    <label>Nome: <input type="text" id="playlistName" value="Playlist_1" /></label>
-  </div>  <div class="inline">
-    <label><input type="radio" name="mode" value="auto" checked onchange="toggleMode('auto')" /> Automatica</label>
-    <label><input type="radio" name="mode" value="manual" onchange="toggleMode('manual')" /> Manuale</label>
-    <label><input type="radio" name="mode" value="original" onchange="toggleMode('original')" /> Originale</label>
-    <label><input type="radio" name="mode" value="new" onchange="toggleMode('new')" /> Nuova</label>
-  </div>  <details>
-    <summary>Filtri</summary>
-    <div class="inline">
-      <label>Parole incluse:
-        <input type="text" id="includeWords" placeholder="acoustic, piano..." />
-      </label>
-      <label>Parole escluse:
-        <input type="text" id="excludeWords" placeholder="remix, live..." />
-      </label>
-    </div><div class="inline">
-  <label>Durata (sec):</label>
-  <div style="display: flex; flex-direction: column;">
-    <input type="range" min="0" max="3600" value="0" id="duration-min" oninput="updateSliderDisplay('duration')" />
-    <input type="range" min="0" max="3600" value="3600" id="duration-max" oninput="updateSliderDisplay('duration')" />
-    <span id="duration-display">0 - 3600</span>
-  </div>
+<body><h1>🎿 PlaylistFinder</h1><div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+  <button onclick="login()">🔐 Login</button>
+  <span id="loginStatus">❌</span>
+</div><div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+  <input type="text" placeholder="Link playlist Spotify" id="playlistLink" style="width: 50%;">
+  <button onclick="addPlaylistInput()">➕</button>
 </div>
-
-<div class="inline">
-  <label>Popolarità:</label>
-  <div style="display: flex; flex-direction: column;">
-    <input type="range" min="0" max="100" value="0" id="popularity-min" oninput="updateSliderDisplay('popularity')" />
-    <input type="range" min="0" max="100" value="100" id="popularity-max" oninput="updateSliderDisplay('popularity')" />
-    <span id="popularity-display">0 - 100</span>
+<div id="additionalLinks"></div><div>
+  <label><input type="radio" name="mode" value="auto" checked> Automatica</label>
+  <label><input type="radio" name="mode" value="manual"> Manuale</label>
+  <label><input type="radio" name="mode" value="original"> Originale</label>
+  <label><input type="radio" name="mode" value="new"> Nuova</label>
+</div><div style="margin-top: 10px;">
+  <label>Nome: <input type="text" id="playlistName" value="Playlist_1" /></label>
+</div><details>
+  <summary>Filtri</summary>
+  <div>
+    <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..."></label><br>
+    <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..."></label><br>
   </div>
-</div>
-
-<div class="inline">
-  <label>Generi:</label>
-  <div class="genre-grid" id="genreList">
-    <label><input type="checkbox" value="pop" /> Pop</label>
-    <label><input type="checkbox" value="rock" /> Rock</label>
-    <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
-    <label><input type="checkbox" value="classical" /> Classica</label>
-    <label><input type="checkbox" value="acoustic" /> Acustico</label>
-    <label><input type="checkbox" value="piano" /> Piano</label>
-    <label><input type="checkbox" value="instrumental" /> Instrumental</label>
-    <label><input type="checkbox" value="edm" /> EDM</label>
+  <div class="slider-container">
+    <label>Durata (sec): <span id="durationVal"></span></label>
+    <div id="durationSlider"></div>
   </div>
-  <input type="text" id="customGenres" placeholder="Altri generi separati da virgola" style="margin-top: 0.5rem; width: 80%;" />
-</div>
+  <div class="slider-container">
+    <label>Popolarità: <span id="popularityVal"></span></label>
+    <div id="popularitySlider"></div>
+  </div>
+  <div>
+    <label>Filtra per genere:</label>
+    <div id="genreMenu">
+      <label><input type="checkbox" value="pop" /> Pop</label>
+      <label><input type="checkbox" value="rock" /> Rock</label>
+      <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
+      <label><input type="checkbox" value="edm" /> EDM</label>
+      <label><input type="checkbox" value="classical" /> Classica</label>
+    </div>
+    <label>Generi personalizzati: <input type="text" id="customGenres" placeholder="es: trap, ambient..."></label>
+  </div>
+</details><div style="margin-top: 20px;">
+  <button onclick="startProcessing()">🎯 Crea Playlist</button>
+  <button onclick="exportJSON()">📅 Scarica</button>
+  <input type="file" id="importFile" onchange="importJSON()" />
+</div><div class="progress"><div class="progress-bar" id="progressBar"></div></div><script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/distribute/nouislider.min.js"></script><script>
+let accessToken = '';
+let durationSlider = document.getElementById('durationSlider');
+let popularitySlider = document.getElementById('popularitySlider');
 
-  </details>  <div class="inline" style="margin-top: 2rem;">
-    <button onclick="startProcessing()">🎯 Trova brani</button>
-    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none;">📥 Crea da selezione</button>
-  </div>  <div id="trackSelection"></div>
-  <!-- SCRIPT da incollare separatamente o in un blocco <script src="script.js"></script> -->
-  
-</body>
+noUiSlider.create(durationSlider, {
+  start: [0, 3600], connect: true, range: {min: 0, max: 7200},
+  tooltips: true, format: {to: v => Math.round(v), from: v => Number(v)}
+});
+noUiSlider.create(popularitySlider, {
+  start: [0, 100], connect: true, range: {min: 0, max: 100},
+  tooltips: true, format: {to: v => Math.round(v), from: v => Number(v)}
+});
+
+durationSlider.noUiSlider.on('update', v => {
+  document.getElementById('durationVal').textContent = `${v[0]} - ${v[1]}`;
+});
+popularitySlider.noUiSlider.on('update', v => {
+  document.getElementById('popularityVal').textContent = `${v[0]} - ${v[1]}`;
+});
+
+function login() {
+  accessToken = "fake_token"; // Simulazione login
+  document.getElementById('loginStatus').textContent = '✅';
+}
+function addPlaylistInput() {
+  const div = document.createElement("div");
+  div.innerHTML = '<input type="text" placeholder="Altro link playlist Spotify" style="width: 50%;">';
+  document.getElementById('additionalLinks').appendChild(div);
+}
+function startProcessing() {
+  document.getElementById("progressBar").style.width = "0%";
+  let width = 0;
+  const interval = setInterval(() => {
+    width += 5;
+    document.getElementById("progressBar").style.width = width + "%";
+    if (width >= 100) clearInterval(interval);
+  }, 200);
+}
+function exportJSON() {
+  const data = { test: "esempio" };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "playlist.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importJSON() {
+  const fileInput = document.getElementById("importFile");
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const json = JSON.parse(e.target.result);
+    console.log("Importato:", json);
+  };
+  reader.readAsText(file);
+}
+</script></body>
 </html>
