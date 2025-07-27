@@ -150,7 +150,7 @@
         <span id="durationLabel">0 - 3600</span>
       </label>
       -->
-      <!-- RANGE SLIDER -->
+      <!-- DUE SLIDER ALLINEATI -->
       <div class="range-container">
         <label>Durata (sec)</label>
         <div class="double-range">
@@ -171,6 +171,7 @@
         <span id="popularityLabel">0 - 100</span>
       </label>
       -->
+      <!-- DUE SLIDER ALLINEATI -->
       <div class="range-container">
         <label>Popolarità</label>
         <div class="double-range">
@@ -419,6 +420,7 @@
       // FETCH TRACKS dalla playlist
       // ==============================
       let allTracks = [], offset = 0;
+      //document.getElementById("progressBarContainer").style.display = "block";
       if (playlistId) {
         while (true) {
           const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&offset=${offset}`, {
