@@ -149,9 +149,14 @@
         width: 100%;
       }
     }
-    @media(max-width: 600px) {
+    @media (max-width: 600px) {
       input, select, button {
         width: 100% !important;
+        box-sizing: border-box;
+      }
+      .inline, .row, .flex-row {
+        flex-direction: column;
+        align-items: stretch;
       }
     }
     /* END of ADD */
@@ -165,7 +170,10 @@
   <span id="loginStatus" class="status-icon">❌ Login non effettuato</span>
   <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 80%; margin-top: 0.5rem;" />
   <br/>
-  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
+  <div class="inline" id="playlistInputs">
+    <input type="text" class="playlist-link" placeholder="Link playlist Spotify" />
+    <button class="add-link" onclick="addPlaylistInput()">➕</button>
+  </div>
   <br/>
   
   <!-- Selettore modalità -->
@@ -343,7 +351,19 @@
       return btoa(String.fromCharCode(...new Uint8Array(digest)))
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
-
+  
+    // ==============================
+    // FUNZIONI: Aggiunge più link
+    // ==============================
+    function addPlaylistInput() {
+      const container = document.getElementById('playlistInputs');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'playlist-link';
+      input.placeholder = 'Link playlist Spotify';
+      container.insertBefore(input, container.querySelector('.add-link'));
+    }
+  
     // ==============================
     // FUNZIONI: Aggiornano etichette range
     // ==============================
@@ -429,7 +449,9 @@
     async function startProcessing() {
       if (!accessToken) return alert('🔐 Devi fare login prima.');
 
-      const playlistUrl = document.getElementById('playlistLink').value.trim();
+      const playlistLinks = Array.from(document.querySelectorAll('.playlist-link'))
+                          .map(inp => inp.value.trim())
+                          .filter(Boolean);
       const playlistName = document.getElementById('playlistName').value.trim() || 'Playlist_1';
       const playlistId = playlistUrl.includes('/playlist/') ? playlistUrl.split('/playlist/')[1].split('?')[0] : null;
 
