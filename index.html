@@ -115,20 +115,20 @@
 <body>
   <h1>🎧 PlaylistFinder</h1>
 
+  <!-- Input per link e nome playlist -->
+  <button onclick="login()">🔐 Login con Spotify</button>
+  <span id="loginStatus" class="status-icon">❌ Login non effettuato</span>
+  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 80%; margin-top: 0.5rem;" />
+  <br/>
+  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
+  <br/>
+  
   <!-- Selettore modalità -->
   <div style="margin-top: 1rem">
     <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()" /> Automatica</label>
     <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale</label>
-    <!-- Add --><label><input type="radio" name="mode" value="original" onchange="toggleAdvancedMode()" /> Originali</label>
+    <label><input type="radio" name="mode" value="original" onchange="toggleAdvancedMode()" /> Originali</label>
   </div>
-
-  <!-- Input per link e nome playlist -->
-  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
-  <br/>
-  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 80%; margin-top: 0.5rem;" />
-  <br/>
-  <button onclick="login()">🔐 Login con Spotify</button>
-  <span id="loginStatus" class="status-icon">❌</span>
   
   <!-- Filtro avanzato -->
   <details>
