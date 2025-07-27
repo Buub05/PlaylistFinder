@@ -5,13 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PlaylistFinder</title>
   <style>
-    /* ==========================================================
-       GENERAL PAGE LAYOUT AND COLORS
-       - Sets up a dark Spotify-style theme.
-       - Responsive design for mobile.
-    ========================================================== */
+    /* --- Main layout and Spotify style --- */
     body {
-      background-color: #121212; /* Main dark background */
+      background-color: #121212;
       color: white;
       font-family: sans-serif;
       padding: 2rem;
@@ -25,7 +21,7 @@
       border: none;
     }
     button {
-      background-color: #1db954; /* Spotify green */
+      background-color: #1db954;
       color: white;
       cursor: pointer;
     }
@@ -50,92 +46,25 @@
     .input-block, .slider-block {
       margin-bottom: 1rem;
     }
-    /* ==========================================================
-       DUAL RANGE SLIDER STYLES
-       - Used for duration and popularity filters.
-       - Custom track and progress colors.
-    ========================================================== */
+    /* --- Simple slider style (no colored bar, only base track) --- */
     .range-slider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       width: 300px;
       margin: 0 auto;
-      position: relative;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     .range-slider input[type="range"] {
-      pointer-events: all;
       width: 100%;
-      -webkit-appearance: none;
-      background: transparent;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      margin: 0;
-      height: 6px;
-    }
-    .range-slider input[type="range"]:focus {
-      outline: none;
-    }
-    .range-slider input[type="range"]::-webkit-slider-thumb {
-      pointer-events: all;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #1db954;
-      border: 2px solid #fff;
-      -webkit-appearance: none;
-    }
-    .range-slider input[type="range"]::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #1db954;
-      border: 2px solid #fff;
-    }
-    .range-slider input[type="range"]::-ms-thumb {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #1db954;
-      border: 2px solid #fff;
-    }
-    .range-slider input[type="range"]::-webkit-slider-runnable-track {
-      height: 6px;
-      background: #444;
-      border-radius: 3px;
-    }
-    .range-slider input[type="range"]::-ms-fill-lower,
-    .range-slider input[type="range"]::-ms-fill-upper {
-      background: #444;
-      border-radius: 3px;
-    }
-    .range-slider-track,
-    .range-slider-progress {
-      position: absolute;
-      height: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-radius: 3px;
-    }
-    .range-slider-track {
-      width: 100%;
-      background: #444;
-      z-index: 1;
-    }
-    .range-slider-progress {
-      background: #1db954;
-      z-index: 2;
+      margin: 0.3em 0;
+      accent-color: #1db954;
+      /* For Chrome, makes the thumb green */
     }
     label {
       display: block;
       margin-bottom: 0.5rem;
     }
-    /* ==========================================================
-       GENRE CHECKBOX GRID
-       - Used for genre filtering.
-    ========================================================== */
+    /* --- Genre checkbox grid --- */
     .genre-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -145,10 +74,6 @@
       margin: 1rem auto;
       max-width: 400px;
     }
-    /* ==========================================================
-       PROGRESS BAR STYLES
-       - Used to show loading/process progress.
-    ========================================================== */
     #progressBarContainer {
       width: 80%;
       background-color: #333;
@@ -162,9 +87,6 @@
       background-color: #1db954;
       width: 0%;
     }
-    /* ==========================================================
-       TRACK SELECTION STYLES (MANUAL MODE)
-    ========================================================== */
     #trackSelection {
       margin-top: 2rem;
       text-align: left;
@@ -179,9 +101,6 @@
       margin: 1rem auto;
       max-width: 500px;
     }
-    /* ==========================================================
-       RESPONSIVE STYLES FOR MOBILE DEVICES
-    ========================================================== */
     @media(max-width: 600px) {
       input, select, button, textarea {
         width: 100% !important;
@@ -194,26 +113,16 @@
   </style>
 </head>
 <body>
-  <!-- =========================================================
-       HEADER & LOGIN SECTION
-       - App title
-       - Spotify login button (calls JS login)
-       - Shows login status
-  ========================================================= -->
   <h1>🎧 PlaylistFinder</h1>
-  <button onclick="login()">🔐 Login with Spotify</button>
-  <span id="loginStatus" class="status-icon">❌ Not logged in</span>
-  <!-- Name for the new playlist to create -->
-  <input type="text" id="playlistName" placeholder="Name of new playlist" value="Playlist_1" style="width: 80%; margin-top: 0.5rem;" />
+  <button onclick="login()">🔐 Login con Spotify</button>
+  <span id="loginStatus" class="status-icon">❌ Login non effettuato</span>
+  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 80%; margin-top: 0.5rem;" />
   <br/>
-  <!-- Textarea for multiple playlist links (one per line) -->
-  <textarea id="playlistLinks" placeholder="Paste one or more Spotify playlist links, one per line" style="width: 80%; height: 80px;"></textarea>
+  <!-- Back to single-link input -->
+  <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
   <br/>
 
-  <!-- =========================================================
-       MODE SELECTION (Auto, Manual, etc)
-       - Affects how tracks are selected and playlist is created
-  ========================================================= -->
+  <!-- Mode selection -->
   <div style="margin-top: 1rem">
     <label><input type="radio" name="mode" value="auto" checked> Auto</label>
     <label><input type="radio" name="mode" value="manual"> Manual</label>
@@ -221,46 +130,37 @@
     <label><input type="radio" name="mode" value="filtered"> Filtered</label>
   </div>
 
-  <!-- =========================================================
-       ADVANCED FILTERS SECTION (Collapsible)
-       - Includes keyword, duration, popularity, and genre filters.
-  ========================================================= -->
+  <!-- Advanced filters -->
   <details>
-    <summary>🎚️ Advanced Filters</summary>
+    <summary>🎚️ Filtri avanzati</summary>
     <div class="inline">
-      <!-- Exclude/include keywords used for filtering track titles -->
-      <label>Exclude keywords: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
-      <label>Include keywords: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
+      <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
+      <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
     </div>
-    <!-- Duration filter: dual range slider -->
+    <!-- Durata: 2 slider separati -->
     <div class="slider-block">
-      <label>Duration (seconds): <span id="durationLabel"></span></label>
-      <div class="range-slider" id="durationSlider">
-        <div class="range-slider-track"></div>
-        <div class="range-slider-progress" id="durationProgress"></div>
+      <label>Durata (secondi): <span id="durationLabel"></span></label>
+      <div class="range-slider">
         <input type="range" id="durationMin" min="0" max="3600" value="0" step="1">
         <input type="range" id="durationMax" min="0" max="3600" value="3600" step="1">
       </div>
     </div>
-    <!-- Popularity filter: dual range slider -->
+    <!-- Popolarità: 2 slider separati -->
     <div class="slider-block">
-      <label>Popularity: <span id="popularityLabel"></span></label>
-      <div class="range-slider" id="popularitySlider">
-        <div class="range-slider-track"></div>
-        <div class="range-slider-progress" id="popularityProgress"></div>
+      <label>Popolarità: <span id="popularityLabel"></span></label>
+      <div class="range-slider">
         <input type="range" id="popMin" min="0" max="100" value="0" step="1">
         <input type="range" id="popMax" min="0" max="100" value="100" step="1">
       </div>
     </div>
-    <!-- Genres filter: checkbox grid -->
     <div class="inline">
-      <label>Genres:</label>
+      <label>Generi:</label>
       <div class="genre-grid" id="genreList">
         <label><input type="checkbox" value="pop" /> Pop</label>
         <label><input type="checkbox" value="rock" /> Rock</label>
         <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
-        <label><input type="checkbox" value="classical" /> Classical</label>
-        <label><input type="checkbox" value="acoustic" /> Acoustic</label>
+        <label><input type="checkbox" value="classical" /> Classica</label>
+        <label><input type="checkbox" value="acoustic" /> Acustico</label>
         <label><input type="checkbox" value="piano" /> Piano</label>
         <label><input type="checkbox" value="instrumental" /> Instrumental</label>
         <label><input type="checkbox" value="edm" /> EDM</label>
@@ -268,39 +168,27 @@
         <label><input type="checkbox" value="trap" /> Trap</label>
       </div>
     </div>
-    <!-- Custom genres input -->
     <div class="inline">
-      <label>Other: <input type="text" id="customGenres" placeholder="e.g. funky, soul..." /></label>
+      <label>Altro: <input type="text" id="customGenres" placeholder="es: funky, soul..." /></label>
     </div>
   </details>
 
-  <!-- =========================================================
-       MAIN ACTION BUTTONS
-       - Find originals, create playlist (manual), export CSV
-  ========================================================= -->
   <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🎯 Find Original Tracks</button>
-    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">📥 Create from Selection</button>
-    <button onclick="exportCSV()">📄 Export CSV</button>
+    <button onclick="startProcessing()">🎯 Trova brani originali</button>
+    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">📥 Crea da selezione</button>
+    <button onclick="exportCSV()">📄 Esporta CSV</button>
   </div>
 
-  <!-- Progress bar shown during processing -->
   <div id="progressBarContainer"><div id="progressBar"></div></div>
-  <!-- Manual track selection area (shows up only in manual mode) -->
   <div id="trackSelection"></div>
 
 <script>
-    /* ============================================================
-       GLOBAL VARIABLES AND SPOTIFY AUTHENTICATION LOGIC
-       - Handles PKCE login flow, stores access token securely
-    ============================================================ */
-    const clientId = '162bcf77cc254ffaa8426ef1001c1f7f'; // Spotify app client ID
-    const redirectUri = 'https://buub05.github.io/PlaylistFinder/'; // Must match Spotify app settings
-    let codeVerifier = ''; // PKCE code verifier for secure login
-    let accessToken = ''; // Obtained after successful login
+    // ---- SPOTIFY LOGIN CODE (uguale a prima) ----
+    const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
+    const redirectUri = 'https://buub05.github.io/PlaylistFinder/';
+    let codeVerifier = '';
+    let accessToken = '';
 
-    // ========================= SPOTIFY LOGIN =========================
-    // Redirects the user to Spotify authorization page using PKCE flow
     async function login() {
       codeVerifier = generateRandomString(128);
       const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -308,8 +196,6 @@
       const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=playlist-modify-public playlist-modify-private&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
       window.location.href = authUrl;
     }
-
-    // Handles the redirect from Spotify after login, exchanges code for access token
     async function handleRedirect() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
@@ -322,7 +208,6 @@
         client_id: clientId,
         code_verifier: codeVerifier
       });
-      // Exchange authorization code for access token
       const res = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -331,20 +216,16 @@
       const data = await res.json();
       accessToken = data.access_token;
       if (accessToken) {
-        document.getElementById("loginStatus").textContent = "✅ Logged in";
+        document.getElementById("loginStatus").textContent = "✅ Login effettuato";
         document.getElementById("loginStatus").style.color = "lightgreen";
       }
-      // Remove code from URL to keep it clean
       window.history.replaceState({}, document.title, redirectUri);
     }
     handleRedirect();
-
-    // Generates a cryptographically secure random string (for PKCE)
     function generateRandomString(length) {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(x => chars[x % chars.length]).join('');
     }
-    // Generates a code challenge for PKCE (SHA-256 + base64)
     async function generateCodeChallenge(codeVerifier) {
       const data = new TextEncoder().encode(codeVerifier);
       const digest = await crypto.subtle.digest('SHA-256', data);
@@ -352,45 +233,35 @@
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
-    // ==================== DUAL RANGE SLIDER LOGIC ====================
-    // Synchronizes both thumbs and updates progress bar for both sliders (duration and popularity)
-    function setupDualSlider(minInput, maxInput, progressDiv, labelDiv, maxRange) {
-      function syncSliders() {
-        let minVal = parseInt(minInput.value);
-        let maxVal = parseInt(maxInput.value);
-        // Prevent the two thumbs from crossing over
-        if (minVal > maxVal) minVal = maxVal, minInput.value = minVal;
-        if (maxVal < minVal) maxVal = minVal, maxInput.value = maxVal;
-        // Update the visual green progress bar
-        const percentMin = (minVal / maxRange) * 100;
-        const percentMax = (maxVal / maxRange) * 100;
-        progressDiv.style.left = percentMin + '%';
-        progressDiv.style.width = (percentMax - percentMin) + '%';
-        // Show current values
-        labelDiv.textContent = `${minVal} - ${maxVal}`;
-      }
-      minInput.addEventListener('input', syncSliders);
-      maxInput.addEventListener('input', syncSliders);
-      syncSliders(); // Initialize on page load
-    }
-    // Initialize duration and popularity sliders
-    setupDualSlider(
-      document.getElementById('durationMin'),
-      document.getElementById('durationMax'),
-      document.getElementById('durationProgress'),
-      document.getElementById('durationLabel'),
-      3600
-    );
-    setupDualSlider(
-      document.getElementById('popMin'),
-      document.getElementById('popMax'),
-      document.getElementById('popularityProgress'),
-      document.getElementById('popularityLabel'),
-      100
-    );
+    // ---- SLIDER UPDATE LOGIC (original style, no overlap lock) ----
+    const durationMin = document.getElementById('durationMin');
+    const durationMax = document.getElementById('durationMax');
+    const durationLabel = document.getElementById('durationLabel');
+    const popMin = document.getElementById('popMin');
+    const popMax = document.getElementById('popMax');
+    const popularityLabel = document.getElementById('popularityLabel');
 
-    // ========== MODE SWITCH LOGIC ==========
-    // Shows/hides the manual playlist button depending on selected mode
+    function updateDurationSlider() {
+      let min = parseInt(durationMin.value);
+      let max = parseInt(durationMax.value);
+      // Sliders stay independent, but label always shows min/max in order
+      if (min > max) [min, max] = [max, min];
+      durationLabel.textContent = `${min} - ${max}`;
+    }
+    function updatePopularitySlider() {
+      let min = parseInt(popMin.value);
+      let max = parseInt(popMax.value);
+      if (min > max) [min, max] = [max, min];
+      popularityLabel.textContent = `${min} - ${max}`;
+    }
+    durationMin.addEventListener('input', updateDurationSlider);
+    durationMax.addEventListener('input', updateDurationSlider);
+    popMin.addEventListener('input', updatePopularitySlider);
+    popMax.addEventListener('input', updatePopularitySlider);
+    updateDurationSlider();
+    updatePopularitySlider();
+
+    // ---- Mode: show/hide manual button ----
     function toggleAdvancedMode() {
       const mode = document.querySelector('input[name="mode"]:checked').value;
       document.getElementById("createManualPlaylist").style.display = (mode === "manual") ? "inline-block" : "none";
@@ -400,8 +271,7 @@
     });
     toggleAdvancedMode();
 
-    // ========== PROGRESS BAR ANIMATION ==========
-    // Simulates a loading bar during long operations (fetching/searching)
+    // ---- Progress bar animation ----
     function simulateProgressBar(duration = 5000) {
       const bar = document.getElementById("progressBar");
       const container = document.getElementById("progressBarContainer");
@@ -415,52 +285,37 @@
       update();
     }
 
-    // ========== TRACK TITLE CLEANUP ==========
-    // Removes common tags (remix, live, feat, etc) for better Spotify search matching
+    // ---- Clean title for searching ----
     function cleanTitle(title) {
       return title.toLowerCase()
-        .replace(/\(.*?\)|\[.*?\]/g, '') // Remove parentheses and brackets
+        .replace(/\(.*?\)|\[.*?\]/g, '')
         .replace(/remix|live|version|edit|feat\.?|acoustic|piano|instrumental/gi, '')
         .replace(/\s{2,}/g, ' ').trim();
     }
 
-    // ========== MAIN PROCESSING FUNCTION ==========
-    // Fetches tracks, applies filters, and creates the playlist
+    // ---- MAIN: Single-link playlist processing ----
     async function startProcessing() {
-      if (!accessToken) return alert('🔐 Please log in first.');
-
-      // Read all playlist links (one per line)
-      const linksRaw = document.getElementById('playlistLinks').value.trim();
-      const playlistLinks = linksRaw.split('\n').map(l => l.trim()).filter(Boolean);
-      if (playlistLinks.length === 0) return alert("Please provide at least one playlist link.");
-
-      // Extract playlist IDs from each link
+      if (!accessToken) return alert('🔐 Devi fare login prima.');
+      const playlistUrl = document.getElementById('playlistLink').value.trim();
       const playlistName = document.getElementById('playlistName').value.trim() || 'Playlist_1';
-      const playlistIds = playlistLinks.map(link => {
-        if (link.includes('/playlist/')) return link.split('/playlist/')[1].split('?')[0];
-        return null;
-      }).filter(Boolean);
-
-      if (playlistIds.length === 0) return alert("All links are invalid.");
-
-      // Read all filters from UI
+      const playlistId = playlistUrl.includes('/playlist/') ? playlistUrl.split('/playlist/')[1].split('?')[0] : null;
+      // Filters
       const exclude = document.getElementById('excludeKeywords').value.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
       const include = document.getElementById('includeKeywords').value.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
-      const minDur = parseInt(document.getElementById('durationMin').value || '0');
-      const maxDur = parseInt(document.getElementById('durationMax').value || '3600');
-      const minPop = parseInt(document.getElementById('popMin').value || '0');
-      const maxPop = parseInt(document.getElementById('popMax').value || '100');
+      let minDur = parseInt(durationMin.value);
+      let maxDur = parseInt(durationMax.value);
+      if (minDur > maxDur) [minDur, maxDur] = [maxDur, minDur];
+      let minPop = parseInt(popMin.value);
+      let maxPop = parseInt(popMax.value);
+      if (minPop > maxPop) [minPop, maxPop] = [maxPop, minPop];
       const genres = Array.from(document.querySelectorAll('#genreList input:checked')).map(el => el.value);
       const customGenres = document.getElementById('customGenres').value.split(',').map(s => s.trim()).filter(Boolean);
       const allGenres = [...genres, ...customGenres];
-
-      // Show loading bar
       simulateProgressBar(6000);
 
-      // Fetch all tracks from all provided playlists (handles paging)
-      let allTracks = [];
-      for (const playlistId of playlistIds) {
-        let offset = 0;
+      // --- Fetch tracks from playlist ---
+      let allTracks = [], offset = 0;
+      if (playlistId) {
         while (true) {
           const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&offset=${offset}`, {
             headers: { Authorization: `Bearer ${accessToken}` }
@@ -471,21 +326,20 @@
           if (!json.next) break;
           offset += 100;
         }
+      } else {
+        return alert("Fornisci un link valido a una playlist.");
       }
 
-      // For each track, search for "original" version and apply all filters
       const results = [];
       const manualTracks = [];
       for (const item of allTracks) {
-        if (!item.track) continue; // Skip empty/null
+        if (!item.track) continue;
         const name = cleanTitle(item.track.name);
         const query = encodeURIComponent(name);
-        // Search on Spotify for similar tracks
         const res = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=5`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         const json = await res.json();
-        // Apply all filters to the found tracks
         const matches = (json.tracks.items || []).filter(track => {
           const tname = track.name.toLowerCase();
           if (exclude.some(k => tname && tname.includes(k))) return false;
@@ -494,30 +348,25 @@
           if (dur < minDur || dur > maxDur) return false;
           const pop = track.popularity;
           if (pop < minPop || pop > maxPop) return false;
-          // (Genre filter could be added here if needed)
           return true;
         });
 
-        // In manual mode, let user select the match
         if (document.querySelector('input[name="mode"]:checked').value === "manual") {
           if (matches.length) manualTracks.push({ original: name, options: matches });
         } else {
-          // In auto mode, take first match
           if (matches[0]) results.push(matches[0].uri);
         }
       }
 
-      // If manual mode, show track selection area and stop
       if (document.querySelector('input[name="mode"]:checked').value === "manual") {
         renderManualSelection(manualTracks);
         return;
       }
 
-      // Create new playlist on Spotify and add all found tracks
+      // --- Create playlist and add tracks ---
       const user = await fetch('https://api.spotify.com/v1/me', {
         headers: { Authorization: `Bearer ${accessToken}` }
       }).then(r => r.json());
-
       const playlist = await fetch(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
         method: 'POST',
         headers: {
@@ -526,8 +375,6 @@
         },
         body: JSON.stringify({ name: playlistName, public: false })
       }).then(r => r.json());
-
-      // Add tracks in batches of 100 (Spotify API limit)
       for (let i = 0; i < results.length; i += 100) {
         const chunk = results.slice(i, i + 100);
         await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
@@ -536,15 +383,13 @@
           body: JSON.stringify({ uris: chunk })
         });
       }
-
-      alert('✅ Playlist created successfully!');
+      alert('✅ Playlist creata con successo!');
     }
 
-    // ========== RENDER TRACK SELECTION UI (MANUAL MODE) ==========
-    // Shows a dropdown for each original track so user can pick which result to use
+    // ---- Manual selection rendering ----
     function renderManualSelection(tracks) {
       const container = document.getElementById('trackSelection');
-      container.innerHTML = "<h3>🎯 Select which tracks to include</h3>";
+      container.innerHTML = "<h3>🎯 Seleziona i brani da includere</h3>";
       tracks.forEach((track, i) => {
         const div = document.createElement('div');
         div.className = 'track-option';
@@ -564,16 +409,13 @@
       });
     }
 
-    // ========== CREATE PLAYLIST FROM MANUAL SELECTION ==========
-    // Adds only the tracks chosen by the user to the new playlist
+    // ---- Create playlist from manual selection ----
     async function createManualPlaylist() {
       const selectedUris = Array.from(document.querySelectorAll('select')).map(sel => sel.value);
       const playlistName = document.getElementById('playlistName').value.trim() || 'Playlist_1';
-
       const user = await fetch('https://api.spotify.com/v1/me', {
         headers: { Authorization: `Bearer ${accessToken}` }
       }).then(r => r.json());
-
       const playlist = await fetch(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
         method: 'POST',
         headers: {
@@ -582,7 +424,6 @@
         },
         body: JSON.stringify({ name: playlistName, public: false })
       }).then(r => r.json());
-
       for (let i = 0; i < selectedUris.length; i += 100) {
         const chunk = selectedUris.slice(i, i + 100);
         await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
@@ -591,14 +432,13 @@
           body: JSON.stringify({ uris: chunk })
         });
       }
-      alert('✅ Playlist created successfully!');
+      alert('✅ Playlist creata con successo!');
     }
 
-    // ========== EXPORT MANUAL SELECTION TO CSV ==========
-    // Lets user download their manual selection as a CSV file
+    // ---- Export CSV for manual selection ----
     function exportCSV() {
       const selects = document.querySelectorAll('select');
-      if (!selects.length) return alert('⛔ No manual selection found');
+      if (!selects.length) return alert('⛔ Nessuna selezione trovata');
       const csv = Array.from(selects).map(sel => {
         const text = sel.options[sel.selectedIndex].text;
         const uri = sel.value;
