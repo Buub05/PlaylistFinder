@@ -43,6 +43,24 @@
       gap: 1rem;
       flex-wrap: wrap;
     }
+    /* START of ADD. */
+    .double-range {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .range-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    input[type="range"] {
+      width: 200px;
+      appearance: none;
+      background: transparent;
+    }
+    /* END of ADD. */
+    /* Layaout per filtro a generi con quadratini*/
     .genre-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -52,6 +70,12 @@
       margin: 1rem auto;
       max-width: 400px;
     }
+    /* Layaout per filtro a generi con tendina
+    .genre-select {
+      width: 300px;
+      height: 100px;
+    }
+    */
     #progressBarContainer {
       width: 80%;
       background-color: #333;
@@ -78,6 +102,13 @@
       padding: 1rem;
       margin-bottom: 1rem;
     }
+    /* START of ADD */
+    @media(max-width: 600px) {
+      input, select, button {
+        width: 100% !important;
+      }
+    }
+    /* END of ADD */
   </style>
 </head>
 <body>
@@ -87,37 +118,71 @@
   <div style="margin-top: 1rem">
     <label><input type="radio" name="mode" value="auto" checked onchange="toggleAdvancedMode()" /> Automatica</label>
     <label><input type="radio" name="mode" value="manual" onchange="toggleAdvancedMode()" /> Manuale</label>
+    <!-- Add --><label><input type="radio" name="mode" value="original" onchange="toggleAdvancedMode()" /> Originali</label>
   </div>
 
   <!-- Input per link e nome playlist -->
   <input type="text" id="playlistLink" placeholder="Link playlist Spotify (facoltativo)" style="width: 80%;" />
   <br/>
-  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 60%; margin-top: 0.5rem;" />
+  <input type="text" id="playlistName" placeholder="Nome playlist" value="Playlist_1" style="width: 80%; margin-top: 0.5rem;" />
   <br/>
   <button onclick="login()">🔐 Login con Spotify</button>
-
+  <!-- Add --><span id="loginStatus" style="margin-left: 1rem;"></span>
+  
   <!-- Filtro avanzato -->
   <details>
     <summary>🎚️ Filtri avanzati</summary>
+
+    <!-- Escludi/Inludi parole -->
     <div class="inline">
       <label>Escludi parole: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
       <label>Includi parole: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
     </div>
+
+    <!-- Filtro durata -->
     <div class="inline">
+      <!-- DUE SLIDER -->
+      <!--
       <label>Durata (sec):
         <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateDurationLabel()" />
         <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateDurationLabel()" />
         <span id="durationLabel">0 - 3600</span>
       </label>
+      -->
+      <!-- RANGE SLIDER -->
+      <div class="range-container">
+        <label>Durata (sec)</label>
+        <div class="double-range">
+          <input type="range" id="minDuration" min="0" max="3600" value="0" oninput="updateRangeLabels()">
+          <input type="range" id="maxDuration" min="0" max="3600" value="3600" oninput="updateRangeLabels()">
+        </div>
+        <span id="durationLabel">0 – 3600</span>
+      </div>
     </div>
+
+    <!-- Filtro popolarità -->
     <div class="inline">
+      <!-- DUE SLIDER -->
+      <!--
       <label>Popolarità (0–100):
         <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updatePopularityLabel()" />
         <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updatePopularityLabel()" />
         <span id="popularityLabel">0 - 100</span>
       </label>
+      -->
+      <div class="range-container">
+        <label>Popolarità</label>
+        <div class="double-range">
+          <input type="range" id="minPopularity" min="0" max="100" value="0" oninput="updateRangeLabels()">
+          <input type="range" id="maxPopularity" min="0" max="100" value="100" oninput="updateRangeLabels()">
+        </div>
+        <span id="popularityLabel">0 – 100</span>
+      </div>
     </div>
+
+    <!-- Filtro generi -->
     <div class="inline">
+      <!-- Menù a quadratini -->
       <label>Generi:</label>
       <div class="genre-grid" id="genreList">
         <label><input type="checkbox" value="pop" /> Pop</label>
@@ -128,10 +193,31 @@
         <label><input type="checkbox" value="piano" /> Piano</label>
         <label><input type="checkbox" value="instrumental" /> Instrumental</label>
         <label><input type="checkbox" value="edm" /> EDM</label>
+        <label><input type="checkbox" value="indie" /> Indie</label>
+        <label><input type="checkbox" value="trap" /> Trap</label>
       </div>
     </div>
+      <!-- Menù a tendina --><!--
+      <label>Generi comuni:<br>
+        <select id="genreList" multiple class="genre-select">
+          <option value="pop">Pop</option>
+          <option value="rock">Rock</option>
+          <option value="hip-hop">Hip-Hop</option>
+          <option value="classical">Classica</option>
+          <option value="acoustic">Acustico</option>
+          <option value="piano">Piano</option>
+          <option value="instrumental">Instrumental</option>
+          <option value="edm">EDM</option>
+          <option value="lo-fi">Lo-fi</option>
+          <option value="ambient">Ambient</option>
+          <option value="trap">Trap</option>
+        </select>
+      </label>
+  </div>
+    -->
+    <!-- Altro genere -->
     <div class="inline">
-      <label>Generi personalizzati: <input type="text" id="customGenres" placeholder="es: indie, trap..." /></label>
+      <label>Altro: <input type="text" id="customGenres" placeholder="es: funky, soul..." /></label>
     </div>
   </details>
 
@@ -197,6 +283,10 @@
 
       const data = await res.json();
       accessToken = data.access_token;
+      if (accessToken) {
+        document.getElementById("loginStatus").textContent = "✅ Login effettuato";
+        document.getElementById("loginStatus").style.color = "lightgreen";
+      }
       window.history.replaceState({}, document.title, redirectUri); // Rimuove codice dalla barra indirizzi
     }
 
@@ -224,6 +314,8 @@
     // ==============================
     // FUNZIONI: Aggiornano etichette range
     // ==============================
+    //UPDATE DUE SLIDER
+    /* 
     function updateDurationLabel() {
       const min = document.getElementById('minDuration').value;
       const max = document.getElementById('maxDuration').value;
@@ -235,6 +327,14 @@
       const max = document.getElementById('maxPopularity').value;
       document.getElementById('popularityLabel').textContent = `${min} - ${max}`;
     }
+    */
+    //UPDATE RANGE SLIDER
+    function updateRangeLabels() {
+      document.getElementById("durationLabel").textContent = 
+        document.getElementById("minDuration").value + " – " + document.getElementById("maxDuration").value;
+      document.getElementById("popularityLabel").textContent = 
+        document.getElementById("minPopularity").value + " – " + document.getElementById("maxPopularity").value;
+    }
 
     // ==============================
     // FUNZIONE: Cambia visibilità bottone modalità manuale
@@ -244,7 +344,18 @@
       const manualBtn = document.getElementById("createManualPlaylist");
       manualBtn.style.display = (mode === "manual") ? "inline-block" : "none";
     }
-
+    
+    // ==============================
+    // FUNZIONE: Cambia visibilità bottone modalità originale
+    // ==============================
+    /*
+    function toggleAdvancedMode() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      const originalBtn = document.getElementById("createOriginalPlaylist");
+      originalBtn.style.display = (mode === "original") ? "inline-block" : "none";
+    }
+    */
+  
     // ==============================
     // FUNZIONE: Simula barra di progresso
     // ==============================
@@ -289,7 +400,15 @@
       const minPop = parseInt(document.getElementById('minPopularity').value || '0');
       const maxPop = parseInt(document.getElementById('maxPopularity').value || '100');
 
+      /* BUONO2
+      const minDur = parseInt(document.getElementById("minDuration").value);
+      const maxDur = parseInt(document.getElementById("maxDuration").value);
+      const minPop = parseInt(document.getElementById("minPopularity").value);
+      const maxPop = parseInt(document.getElementById("maxPopularity").value);
+      */
+      
       const genres = Array.from(document.querySelectorAll('#genreList input:checked')).map(el => el.value);
+      //BUONO2 const genreOptions = Array.from(document.getElementById("genreList").selectedOptions).map(opt => opt.value);
       const customGenres = document.getElementById('customGenres').value.split(',').map(s => s.trim()).filter(Boolean);
       const allGenres = [...genres, ...customGenres];
 
@@ -305,11 +424,13 @@
             headers: { Authorization: `Bearer ${accessToken}` }
           });
           const json = await res.json();
-          if (!json.items) break;
+          if (!json.items || json.items.length === 0) break; //ADDED ||
           allTracks.push(...json.items);
           if (!json.next) break;
           offset += 100;
         }
+      } else {                                                  //ADDED else
+      return alert("Fornisci un link valido a una playlist.");
       }
 
       const results = [];
@@ -377,7 +498,7 @@
     // ==============================
     function renderManualSelection(tracks) {
       const container = document.getElementById('trackSelection');
-      container.innerHTML = '';
+      container.innerHTML = "<h3>🎯 Seleziona i brani da includere</h3>"; //SUB '' with "<h3>🎯 Seleziona i brani da includere</h3>"
       tracks.forEach((track, i) => {
         const div = document.createElement('div');
         div.className = 'track-option';
@@ -429,6 +550,38 @@
       alert('✅ Playlist creata con successo!');
     }
 
+    // ==============================
+    // CREA PLAYLIST originali
+    // ==============================
+    async function createManualPlaylist() {
+      const selectedUris = Array.from(document.querySelectorAll('select')).map(sel => sel.value);
+      const playlistName = document.getElementById('playlistName').value.trim() || 'Playlist_1';
+
+      const user = await fetch('https://api.spotify.com/v1/me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }).then(r => r.json());
+
+      const playlist = await fetch(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: playlistName, public: false })
+      }).then(r => r.json());
+
+      for (let i = 0; i < selectedUris.length; i += 100) {
+        const chunk = selectedUris.slice(i, i + 100);
+        await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uris: chunk })
+        });
+      }
+
+      alert('✅ Playlist creata con successo!');
+    }
+  
     // ==============================
     // FUNZIONE: Esporta CSV da selezioni
     // ==============================
