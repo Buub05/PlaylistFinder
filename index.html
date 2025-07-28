@@ -174,8 +174,8 @@
       left: -320px;
       width: 300px;
       height: 100%;
-      background: #222;
-      color: #fff;
+      background: #eaeaea;         /* grigio chiaro */
+      color: #222;
       box-shadow: 2px 0 8px rgba(0,0,0,0.2);
       z-index: 1000;
       padding: 2rem 1.2rem;
@@ -254,6 +254,8 @@
     }
     @keyframes funin { from { opacity: 0; } to { opacity: 1; } }
   </style>
+  <!-- Drag&drop avanzato (SortableJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
   <!-- Settings button -->
@@ -273,6 +275,15 @@
       <button onclick="toggleTheme()">🌓 Cambia tema</button>
     </div>
     <hr>
+    <!-- Leaderboard -->
+    <div>
+      <button class="highlight" onclick="showLeaderboard()">Leaderboard</button>
+    </div>
+    <!-- Carica playlist locale -->
+    <div>
+      <button class="highlight" onclick="loadLocalPlaylistUI()">📂 Carica playlist locale</button>
+    </div>
+  </div>
     <div>
       <label>Citazione motivazionale:</label>
       <div id="randomQuote"></div>
@@ -285,7 +296,7 @@
   <button onclick="login()" id="loginBtn">🔐 Login with Spotify</button>
   <span id="loginStatus" class="status-icon">❌ Non autenticato</span>
 
-  <!-- Playlist Name (reimpostata, esteticamente migliorata e responsive) -->
+  <!-- Playlist Name -->
   <div style="margin: 1rem auto; max-width: 460px;">
     <label for="playlistName" id="playlistLabel" style="font-weight:bold; font-size:1.13rem;">Nome playlist:</label>
     <input type="text" id="playlistName" placeholder="Inserisci nome playlist..." value="" style="width: 100%; margin-top: 0.5rem; border: 1px solid #1db954;"/>
@@ -353,6 +364,16 @@
       <button onclick="savePreset(prompt('Nome preset?'))">💾 Salva preset</button>
       <button onclick="loadPreset(prompt('Preset da caricare?'))">📂 Carica preset</button>
     </div>
+    <!-- Mood/Energia evidenziata -->
+    <div class="slider-block highlight">
+      <label>Mood/Energia: <span id="energyLabel"></span></label>
+      <div class="range-slider" id="energySlider">
+        <div class="range-slider-track"></div>
+        <div class="range-slider-progress" id="energyProgress"></div>
+        <input type="range" id="energyMin" min="0" max="1" step="0.01" value="0">
+        <input type="range" id="energyMax" min="0" max="1" step="0.01" value="1">
+      </div>
+    </div>
   </details>
 
   <!-- Main actions -->
@@ -371,6 +392,14 @@
   <!-- Manual selection area (shows up in manual mode) -->
   <div id="trackSelection"></div>
 
+  <!-- Condividi/statistiche in fondo -->
+  <div style="margin-top:3rem;">
+    <button onclick="shareAndStatsUI()" id="shareStatsBtn">🔗 Condividi / Statistiche playlist</button>
+    <!-- Telegram e WhatsApp -->
+    <button class="highlight" onclick="shareViaTelegram(lastPlaylistUrl)">Telegram</button>
+    <button class="highlight" onclick="shareViaWhatsapp(lastPlaylistUrl)">WhatsApp</button>
+  </div>
+  
   <!-- Fun quote -->
   <div class="fun-quote" id="funQuote"></div>
 
@@ -526,6 +555,24 @@
   popMax.addEventListener('input', () => updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100));
   updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100);
 
+  // Mood/Energia slider JS evidenziato
+  const energyMin = document.getElementById('energyMin');
+  const energyMax = document.getElementById('energyMax');
+  const energyProgress = document.getElementById('energyProgress');
+  const energyLabel = document.getElementById('energyLabel');
+  function updateEnergySlider() {
+    const min = parseFloat(energyMin.value);
+    const max = parseFloat(energyMax.value);
+    const percentMin = (min / 1) * 100;
+    const percentMax = (max / 1) * 100;
+    energyProgress.style.left = percentMin + '%';
+    energyProgress.style.right = (100 - percentMax) + '%';
+    energyLabel.textContent = `${min} - ${max}`;
+  }
+  energyMin.addEventListener('input', updateEnergySlider);
+  energyMax.addEventListener('input', updateEnergySlider);
+  updateEnergySlider();
+  
   function toggleAdvancedMode() {
     const mode = document.querySelector('input[name="mode"]:checked').value;
     document.getElementById("createManualPlaylist").style.display = (mode === "manual") ? "inline-block" : "none";
@@ -576,6 +623,8 @@
       popMax: document.getElementById('popMax').value,
       genres: Array.from(document.querySelectorAll('#genreList input:checked')).map(el => el.value),
       customGenres: document.getElementById('customGenres').value
+      energyMin: document.getElementById('energyMin').value,
+      energyMax: document.getElementById('energyMax').value
     };
     localStorage.setItem('playlistfinder_preset_'+name, JSON.stringify(preset));
     alert('Preset salvato!');
@@ -590,6 +639,8 @@
     document.getElementById('popMin').value = preset.popMin;
     document.getElementById('popMax').value = preset.popMax;
     document.getElementById('customGenres').value = preset.customGenres;
+    document.getElementById('energyMin').value = preset.energyMin || "0";
+    document.getElementById('energyMax').value = preset.energyMax || "1";
     document.querySelectorAll('#genreList input').forEach(el => el.checked = preset.genres.includes(el.value));
     updateSlider(durationMin, durationMax, durationProgress, durationLabel, 3600);
     updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100);
@@ -603,6 +654,18 @@
       seen.add(item.track.id);
       return true;
     });
+  }
+  // Salvataggio locale playlist evidenziato
+  function savePlaylistToLocal(tracks, playlistName) {
+    localStorage.setItem('pf_playlist_' + playlistName, JSON.stringify(tracks));
+  }
+  function loadLocalPlaylist(playlistName) {
+    return JSON.parse(localStorage.getItem('pf_playlist_' + playlistName) || "[]");
+  }
+  function loadLocalPlaylistUI() {
+    let name = prompt("Nome playlist locale:");
+    let tracks = loadLocalPlaylist(name);
+    alert(tracks.length ? `Hai recuperato ${tracks.length} brani dalla playlist locale.` : "Nessuna playlist trovata.");
   }
   let allTracks = [];
 
@@ -620,6 +683,8 @@
     let minPop = parseInt(popMin.value);
     let maxPop = parseInt(popMax.value);
     if (minPop > maxPop) [minPop, maxPop] = [maxPop, minPop];
+    let minEnergy = parseFloat(document.getElementById('energyMin').value);
+    let maxEnergy = parseFloat(document.getElementById('energyMax').value);
     const genres = Array.from(document.querySelectorAll('#genreList input:checked')).map(el => el.value);
     const customGenres = document.getElementById('customGenres').value.split(',').map(s => s.trim()).filter(Boolean);
     const allGenresSelected = [...genres, ...customGenres];
@@ -651,25 +716,36 @@
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       const json = await res.json();
-      const matches = (json.tracks.items || []).filter(track => {
+      let filteredTracks = [];
+      for (const track of (json.tracks.items || [])) {
         const tname = track.name.toLowerCase();
-        if (exclude.some(k => tname && tname.includes(k))) return false;
-        if (include.length && !include.some(k => tname && tname.includes(k))) return false;
+        if (exclude.some(k => tname && tname.includes(k))) continue;
+        if (include.length && !include.some(k => tname && tname.includes(k))) continue;
         const dur = track.duration_ms / 1000;
-        if (dur < minDur || dur > maxDur) return false;
+        if (dur < minDur || dur > maxDur) continue;
         const pop = track.popularity;
-        if (pop < minPop || pop > maxPop) return false;
-        return true;
-      });
-      if (document.querySelector('input[name="mode"]:checked').value === "manual") {
-        if (matches.length) manualTracks.push({ original: name, options: matches });
-      } else {
-        if (matches[0]) results.push(matches[0].uri);
+        if (pop < minPop || pop > maxPop) continue;
+        // Richiesta energia (audio features)
+        let energy = 0.5;
+        try {
+          let feats = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`,{
+            headers: { Authorization: `Bearer ${accessToken}` }
+          }).then(r=>r.json());
+          energy = feats.energy || 0.5;
+        } catch(e){}
+        if (energy < minEnergy || energy > maxEnergy) continue;
+        filteredTracks.push(track);
       }
     }
     if (document.querySelector('input[name="mode"]:checked').value === "manual") {
       renderManualSelection(manualTracks);
       enableDragDrop();
+      // Drag&drop avanzato (SortableJS)
+      Sortable.create(document.getElementById('trackSelection'), {
+        animation: 150,
+        handle: '.track-option',
+        draggable: '.track-option'
+      });
       return;
     }
     const user = await fetch('https://api.spotify.com/v1/me', {
@@ -692,9 +768,33 @@
         body: JSON.stringify({ uris: chunk })
       });
     }
+    // Salvataggio locale playlist
+    savePlaylistToLocal(allTracks, playlistName);
+    // Leaderboard
+    updateLeaderboard(playlistName);
+    // Suggerimenti automatici
+    suggestSimilarTracks(results.map(uri=>uri.split(':')[2]));
     alert('✅ Playlist creata!');
   }
 
+  // Suggerimenti automatici di brani simili evidenziato
+  async function suggestSimilarTracks(trackIds) {
+    if (!accessToken) return;
+    const recs = [];
+    for (let i = 0; i < trackIds.length; i += 5) {
+      const seed = trackIds.slice(i, i+5).join(',');
+      const res = await fetch(`https://api.spotify.com/v1/recommendations?seed_tracks=${seed}&limit=3`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const json = await res.json();
+      recs.push(...json.tracks);
+    }
+    let html = '<h3 class="highlight">Brani consigliati:</h3><ul>';
+    recs.forEach(t => html += `<li>${t.name} - ${t.artists.map(a=>a.name).join(', ')}</li>`);
+    html += '</ul>';
+    document.getElementById('trackSelection').insertAdjacentHTML('beforeend', html);
+  }
+  
   function renderManualSelection(tracks) {
     const container = document.getElementById('trackSelection');
     container.innerHTML = "<h3>🎯 Seleziona i brani che vuoi includere</h3>";
@@ -768,9 +868,13 @@
         body: JSON.stringify({ uris: chunk })
       });
     }
+    savePlaylistToLocal(allTracks, playlistName);
+    updateLeaderboard(playlistName);
+    suggestSimilarTracks(selectedUris.map(uri=>uri.split(':')[2]));
     alert('✅ Playlist creata!');
   }
 
+  // Esporta CSV
   function exportCSV() {
     const selects = document.querySelectorAll('select');
     if (!selects.length) return alert('⛔ No selections found');
@@ -783,6 +887,22 @@
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'playlist.csv';
+    a.click();
+  }
+
+  // Esporta JSON
+  function exportJSON() {
+    const selects = document.querySelectorAll('select');
+    if (!selects.length) return alert('⛔ No selections found');
+    const data = Array.from(selects).map(sel => {
+      const text = sel.options[sel.selectedIndex].text;
+      const uri = sel.value;
+      return { text, uri };
+    });
+    const blob = new Blob([JSON.stringify(data,null,2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'playlist.json';
     a.click();
   }
 
@@ -812,19 +932,28 @@
     msg += "\n\nVuoi esportare la playlist come CSV?";
     if (confirm(msg)) exportCSV();
   }
-  /*
-  function sharePlaylist(url) {
-    if (!url) return alert('Nessuna playlist creata ancora!');
-    if (navigator.share) {
-      navigator.share({ title: 'Playlist Spotify', url });
-    } else {
-      prompt('Copia questo link:', url);
-    }
+  
+  // Telegram/WhatsApp
+  function shareViaTelegram(url) {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}`, "_blank");
   }
-  function sharePlaylistUI() {
-    sharePlaylist(lastPlaylistUrl);
+  function shareViaWhatsapp(url) {
+    window.open(`https://wa.me/?text=${encodeURIComponent(url)}`, "_blank");
   }
-  */
+  
+  // Leaderboard
+  function updateLeaderboard(playlistName) {
+    let board = JSON.parse(localStorage.getItem('pf_leaderboard') || "[]");
+    const found = board.find(pl => pl.name === playlistName);
+    if (found) found.count++;
+    else board.push({name:playlistName,count:1});
+    localStorage.setItem('pf_leaderboard', JSON.stringify(board));
+  }
+  function showLeaderboard() {
+    let board = JSON.parse(localStorage.getItem('pf_leaderboard') || "[]");
+    board.sort((a,b)=>b.count-a.count);
+    alert("Leaderboard playlist:\n" + board.map(pl=>`${pl.name}: ${pl.count} volte`).join('\n'));
+  }
 </script>
 </body>
 </html>
