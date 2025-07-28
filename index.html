@@ -223,12 +223,25 @@
       margin: 2rem auto 1rem auto;
       display: none;
       height: 24px;
+      position: relative;
     }
     #progressBar {
       height: 100%;
       background-color: #1db954;
       width: 0%;
       transition: width .3s;
+    }
+    #progressLabel {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.1rem;
+      line-height: 24px;
+      pointer-events: none;
+      z-index: 2;
     }
     /* Extra (not requested but fun) */
     .fun-quote {
@@ -240,20 +253,6 @@
       animation: funin 1.4s;
     }
     @keyframes funin { from { opacity: 0; } to { opacity: 1; } }
-    /* Easter egg */
-    #easterEgg {
-      display: none;
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      background: #1db954;
-      color: #fff;
-      padding: 1rem;
-      border-radius: 12px;
-      font-size: 1.2rem;
-      z-index: 999;
-      box-shadow: 0 0 12px rgba(0,0,0,0.17);
-    }
   </style>
 </head>
 <body>
@@ -277,15 +276,6 @@
     <div>
       <label>Citazione motivazionale:</label>
       <div id="randomQuote"></div>
-    </div>
-    <div>
-      <button onclick="showStatsUI()">📊 Statistiche playlist</button>
-    </div>
-    <div>
-      <button onclick="sharePlaylistUI()">🔗 Condividi playlist</button>
-    </div>
-    <div>
-      <button onclick="showEasterEgg()">❓ Easter egg</button>
     </div>
   </div>
 
@@ -373,7 +363,10 @@
   </div>
 
   <!-- Progress bar for processes! -->
-  <div id="progressBarContainer"><div id="progressBar"></div></div>
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
+    <span id="progressLabel"></span>
+  </div>
 
   <!-- Manual selection area (shows up in manual mode) -->
   <div id="trackSelection"></div>
@@ -381,20 +374,10 @@
   <!-- Fun quote -->
   <div class="fun-quote" id="funQuote"></div>
 
-  <!-- Easter egg -->
-  <div id="easterEgg">🎉 Complimenti, hai trovato l'easter egg! <br> Sapevi che puoi generare playlist con le canzoni che preferisci?</div>
-
 <script>
   // Sidebar menu logic
   function toggleSidebar() {
     document.getElementById('sidebarSettings').classList.toggle('open');
-  }
-
-  // Easter egg
-  function showEasterEgg() {
-    let egg = document.getElementById('easterEgg');
-    egg.style.display = egg.style.display === 'block' ? 'none' : 'block';
-    setTimeout(() => egg.style.display = 'none', 6000);
   }
 
   // Quotes
@@ -416,7 +399,7 @@
     it: {
       login: "🔐 Accedi con Spotify",
       playlist: "Nome playlist:",
-      notLogged: "❌ Non autenticato",
+      notLogged: "❌ Non loggato",
       logged: "Login effettuato",
       findTracks: "🎯 Trova tracce originali",
       createSelection: "📥 Crea dalla selezione",
@@ -553,17 +536,24 @@
   toggleAdvancedMode();
 
   // Barra di progresso
-  function simulateProgressBar(duration = 5000) {
+  function simulateProgressBar(duration = 6000) {
     const bar = document.getElementById("progressBar");
     const container = document.getElementById("progressBarContainer");
+    const label = document.getElementById("progressLabel");
     container.style.display = "block";
     bar.style.width = "0%";
+    label.textContent = "";
     let start = Date.now();
     function update() {
-      let progress = Math.min(1, (Date.now() - start) / duration);
+      let elapsed = Date.now() - start;
+      let progress = Math.min(1, elapsed / duration);
       bar.style.width = (progress * 100) + "%";
-      if (progress < 1) requestAnimationFrame(update);
-      else setTimeout(()=>container.style.display="none",1000);
+      let remaining = Math.ceil((duration - elapsed)/1000);
+      label.textContent = remaining > 0 ? `Tempo rimanente: ${remaining}s` : 'Operazione completata!';
+      if (progress < 1)
+        requestAnimationFrame(update);
+      else
+        setTimeout(()=>container.style.display="none",1000);
     }
     update();
   }
@@ -810,11 +800,19 @@
     const avgDuration = Math.round(totalDuration / tracks.length / 1000);
     const avgPop = Math.round(popSum / tracks.length);
     const topArtist = Object.entries(artistCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
-    alert(`Statistiche playlist:\nDurata media: ${avgDuration}s\nPopolarità media: ${avgPop}\nArtista più frequente: ${topArtist}`);
+    return `Statistiche playlist:\nDurata media: ${avgDuration}s\nPopolarità media: ${avgPop}\nArtista più frequente: ${topArtist}`;
   }
-  function showStatsUI() {
-    showStats(allTracks);
+  function shareAndStatsUI() {
+    let stats = showStats(allTracks);
+    let msg = "";
+    if (lastPlaylistUrl) {
+      msg += "Link playlist:\n" + lastPlaylistUrl + "\n\n";
+    }
+    if (stats) msg += stats;
+    msg += "\n\nVuoi esportare la playlist come CSV?";
+    if (confirm(msg)) exportCSV();
   }
+  /*
   function sharePlaylist(url) {
     if (!url) return alert('Nessuna playlist creata ancora!');
     if (navigator.share) {
@@ -826,6 +824,7 @@
   function sharePlaylistUI() {
     sharePlaylist(lastPlaylistUrl);
   }
+  */
 </script>
 </body>
 </html>
