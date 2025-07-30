@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlaylistFinder</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="languages.js"></script>
+  <script src="export.js"></script>
+  <script src="genres.js"></script>
+  <script src="filters.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+  <button id="settingsBtn" title="Impostazioni" onclick="toggleSidebar()">⚙️</button>
+  <div id="sidebarSettings">
+    <button class="close-btn" onclick="toggleSidebar()">✖️</button>
+    <h2>Impostazioni</h2>
+    <div>
+      <label for="langSelect"><span style="margin-right:6px;">🌐</span>Lingua:</label>
+      <select id="langSelect" onchange="setLang(this.value)"></select>
+    </div>
+    <div>
+      <button onclick="toggleTheme()">🌓 Cambia tema</button>
+    </div>
+    <div>
+      <button onclick="showLeaderboard()">Leaderboard</button>
+    </div>
+    <div>
+      <button onclick="loadLocalPlaylistUI()">📂 Carica playlist locale</button>
+    </div>
+  </div>
+
+  <h1>🎧 PlaylistFinder</h1>
+
+  <button onclick="login()" id="loginBtn">🔐 Login with Spotify</button>
+  <span id="loginStatus" class="status-icon">❌ Non autenticato</span>
+
+  <div style="margin: 1rem auto; max-width: 460px;">
+    <label for="playlistName" id="playlistLabel">Nome playlist:</label>
+    <input type="text" id="playlistName" placeholder="Nome playlist: Playlist_1 (di default)" value="Playlist_1" style="width: 100%; margin-top: 0.5rem; border: 1px solid #1db954;"/>
+  </div>
+
+  <!-- MODALITÀ SU UNA RIGA -->
+  <div class="inline" style="margin:1rem auto; justify-content:center;">
+    <label><input type="radio" name="mode" value="auto" checked> Auto</label>
+    <label><input type="radio" name="mode" value="manual"> Manuale</label>
+    <label><input type="radio" name="mode" value="original"> Originale</label>
+    <label><input type="radio" name="mode" value="filtered"> Filtrato</label>
+  </div>
+
+  <div class="inline" id="playlistInputs">
+    <input type="text" class="playlist-link" placeholder="Spotify playlist link" style="width: 70%;" />
+    <button type="button" class="add-link" onclick="addPlaylistInput()">➕</button>
+  </div>
+
+  <details>
+    <summary>🎚️ Filtri avanzati</summary>
+    <div class="inline">
+      <label>Exclude words: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
+      <label>Include words: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
+    </div>
+    <div class="slider-block">
+      <label>Durata (secondi): <span id="durationLabel"></span></label>
+      <div class="range-slider" id="durationSlider">
+        <div class="range-slider-track"></div>
+        <div class="range-slider-progress" id="durationProgress"></div>
+        <input type="range" id="durationMin" min="0" max="3600" value="0">
+        <input type="range" id="durationMax" min="0" max="3600" value="3600">
+      </div>
+    </div>
+    <div class="slider-block">
+      <label>Popolarità: <span id="popularityLabel"></span></label>
+      <div class="range-slider" id="popularitySlider">
+        <div class="range-slider-track"></div>
+        <div class="range-slider-progress" id="popularityProgress"></div>
+        <input type="range" id="popMin" min="0" max="100" value="0">
+        <input type="range" id="popMax" min="0" max="100" value="100">
+      </div>
+    </div>
+    <!-- MOOD/ENERGIA -->
+    <div class="slider-block">
+      <label>Mood/Energia: <span id="energyLabel"></span></label>
+      <div class="range-slider" id="energySlider">
+        <div class="range-slider-track"></div>
+        <div class="range-slider-progress" id="energyProgress"></div>
+        <input type="range" id="energyMin" min="0" max="1" step="0.01" value="0">
+        <input type="range" id="energyMax" min="0" max="1" step="0.01" value="1">
+      </div>
+    </div>
+    <!-- GENERI ESTESI -->
+    <div class="inline">
+      <label>Generi:</label>
+      <div class="genre-grid" id="genreList"></div>
+    </div>
+    <div class="inline">
+      <label>Altro: <input type="text" id="customGenres" placeholder="funky, soul..." /></label>
+    </div>
+    <div class="inline">
+      <button onclick="savePreset(prompt('Nome preset?'))">💾 Salva preset</button>
+      <button onclick="loadPreset(prompt('Preset da caricare?'))">📂 Carica preset</button>
+    </div>
+  </details>
+
+  <div style="margin-top: 2rem">
+    <button onclick="startProcessing()">🎯 Trova tracce originali</button>
+    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">📥 Crea dalla selezione</button>
+    <button onclick="exportCSV()">📄 Esporta CSV</button>
+    <button onclick="exportJSON()">📄 Esporta JSON</button>
+    <button onclick="exportAppleMusic()">🍏 Apple Music</button>
+    <button onclick="exportYouTubeMusic()">▶️ YouTube Music</button>
+  </div>
+
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
+    <span id="progressLabel"></span>
+  </div>
+
+  <div id="trackSelection"></div>
+
+  <div style="margin-top:3rem;">
+    <button onclick="shareAndStatsUI()" id="shareStatsBtn">🔗 Condividi / Statistiche playlist</button>
+    <button onclick="shareViaTelegram(lastPlaylistUrl)">Telegram</button>
+    <button onclick="shareViaWhatsapp(lastPlaylistUrl)">WhatsApp</button>
+  </div>
+  
+  <script>
+    // Genera generi e lingue all'avvio
+    document.addEventListener("DOMContentLoaded", () => {
+      // Generi
+      const genreListDiv = document.getElementById('genreList');
+      genreListDiv.innerHTML = genres.map(g => 
+        `<label><input type="checkbox" value="${g.id}" /> ${g.name}</label>`
+      ).join('');
+      // Lingue
+      const langSel = document.getElementById('langSelect');
+      langSel.innerHTML = languages.map(l => 
+        `<option value="${l.code}">${l.label}</option>`
+      ).join('');
+    });
+  </script>
+  <!-- IL RESTO DELLA LOGICA JS DEVE ESSERE DIVISA NEI FILE: languages.js, export.js, genres.js, filters.js -->
+</body>
+</html>
