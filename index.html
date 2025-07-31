@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PlaylistFinder</title>
+  <!-- STYLE: Spotify-like dark by default, with light theme support -->
   <style>
     body {
       background-color: #121212;
@@ -269,6 +270,11 @@
       <select id="langSelect" onchange="setLang(this.value)">
         <option value="it">🇮🇹 Italiano</option>
         <option value="en">🇬🇧 English</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="pt">🇵🇹 Português</option>
+        <option value="ru">🇷🇺 Русский</option>
       </select>
     </div>
     <div>
@@ -343,18 +349,8 @@
     </div>
     <div class="inline">
       <label>Genres:</label>
-      <div class="genre-grid" id="genreList">
-        <label><input type="checkbox" value="pop" /> Pop</label>
-        <label><input type="checkbox" value="rock" /> Rock</label>
-        <label><input type="checkbox" value="hip-hop" /> Hip-Hop</label>
-        <label><input type="checkbox" value="classical" /> Classical</label>
-        <label><input type="checkbox" value="acoustic" /> Acoustic</label>
-        <label><input type="checkbox" value="piano" /> Piano</label>
-        <label><input type="checkbox" value="instrumental" /> Instrumental</label>
-        <label><input type="checkbox" value="edm" /> EDM</label>
-        <label><input type="checkbox" value="indie" /> Indie</label>
-        <label><input type="checkbox" value="trap" /> Trap</label>
-      </div>
+      <div class="genre-grid" id="genreList"></div>
+    </div>
     </div>
     <div class="inline">
       <label>Other: <input type="text" id="customGenres" placeholder="funky, soul..." /></label>
@@ -378,9 +374,12 @@
 
   <!-- Main actions -->
   <div style="margin-top: 2rem">
-    <button onclick="startProcessing()">🎯 Trova tracce originali</button>
-    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none">📥 Crea dalla selezione</button>
-    <button onclick="exportCSV()">📄 Esporta CSV</button>
+    <button onclick="startProcessing()" title="Start analyzing the playlists">🎯 Find original tracks</button>
+    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none" title="Create playlist from selected tracks">📥 Create from selection</button>
+    <button onclick="exportCSV()" title="Export playlist as CSV">📄 Export CSV</button>
+    <button onclick="exportJSON()" title="Export playlist as JSON">🧾 Export JSON</button>
+    <button onclick="exportAppleMusic()" title="Export to Apple Music (see instructions)">🍏 Apple Music</button>
+    <button onclick="exportYouTubeMusic()" title="Export to YouTube Music (see instructions)">▶️ YouTube Music</button>
   </div>
 
   <!-- Progress bar for processes! -->
@@ -404,6 +403,27 @@
   <div class="fun-quote" id="funQuote"></div>
 
 <script>
+  // ======= UI/UX/SETTINGS LOGIC =======
+  // --- Genres list (extended) ---
+  const genres = [
+    { id: "pop", name: "Pop" }, { id: "rock", name: "Rock" }, { id: "hip-hop", name: "Hip-Hop" },
+    { id: "classical", name: "Classical" }, { id: "acoustic", name: "Acoustic" }, { id: "piano", name: "Piano" },
+    { id: "instrumental", name: "Instrumental" }, { id: "edm", name: "EDM" }, { id: "indie", name: "Indie" },
+    { id: "trap", name: "Trap" }, { id: "jazz", name: "Jazz" }, { id: "funk", name: "Funk" },
+    { id: "soul", name: "Soul" }, { id: "metal", name: "Metal" }, { id: "reggae", name: "Reggae" },
+    { id: "rnb", name: "R&B" }, { id: "country", name: "Country" }, { id: "blues", name: "Blues" },
+    { id: "folk", name: "Folk" }, { id: "disco", name: "Disco" }, { id: "techno", name: "Techno" },
+    { id: "house", name: "House" }, { id: "dubstep", name: "Dubstep" }, { id: "ambient", name: "Ambient" },
+    { id: "k-pop", name: "K-Pop" }, { id: "latin", name: "Latin" }, { id: "funky", name: "Funky" },
+    { id: "electro", name: "Electro" }, { id: "drum-n-bass", name: "Drum & Bass" }, { id: "opera", name: "Opera" }
+  ];
+  document.addEventListener("DOMContentLoaded", () => {
+    const genreListDiv = document.getElementById('genreList');
+    genreListDiv.innerHTML = genres.map(g =>
+      `<label><input type="checkbox" value="${g.id}" /> ${g.name}</label>`
+    ).join('');
+  });
+  
   // Sidebar menu logic
   function toggleSidebar() {
     document.getElementById('sidebarSettings').classList.toggle('open');
@@ -423,33 +443,17 @@
   }
   showRandomQuote();
 
-  // Multi-lingua
+ // --- Translation object for UI multi-language support ---
   const translations = {
-    it: {
-      login: "🔐 Accedi con Spotify",
-      playlist: "Nome playlist:",
-      notLogged: "❌ Non loggato",
-      logged: "Login effettuato",
-      findTracks: "🎯 Trova tracce originali",
-      createSelection: "📥 Crea dalla selezione",
-      export: "📄 Esporta CSV",
-      theme: "🌓 Cambia tema",
-      stats: "📊 Statistiche playlist",
-      share: "🔗 Condividi playlist"
-    },
-    en: {
-      login: "🔐 Login with Spotify",
-      playlist: "Playlist name:",
-      notLogged: "❌ Not logged in",
-      logged: "Login successful",
-      findTracks: "🎯 Find original tracks",
-      createSelection: "📥 Create from selection",
-      export: "📄 Export CSV",
-      theme: "🌓 Toggle theme",
-      stats: "📊 Playlist stats",
-      share: "🔗 Share playlist"
-    }
+    it: {login:"🔐 Accedi con Spotify",playlist:"Nome playlist:",notLogged:"❌ Non autenticato",logged:"Login effettuato",findTracks:"🎯 Trova tracce originali",createSelection:"📥 Crea dalla selezione",export:"📄 Esporta CSV",theme:"🌓 Cambia tema",stats:"📊 Statistiche playlist",share:"🔗 Condividi playlist",shareStats:"🔗 Condividi / Statistiche playlist"},
+    en: {login:"🔐 Login with Spotify",playlist:"Playlist name:",notLogged:"❌ Not logged in",logged:"Login successful",findTracks:"🎯 Find original tracks",createSelection:"📥 Create from selection",export:"📄 Export CSV",theme:"🌓 Toggle theme",stats:"📊 Playlist stats",share:"🔗 Share playlist",shareStats:"🔗 Share / Stats playlist"},
+    es: {login:"🔐 Iniciar sesión con Spotify",playlist:"Nombre de la playlist:",notLogged:"❌ No conectado",logged:"Inicio de sesión correcto",findTracks:"🎯 Buscar canciones originales",createSelection:"📥 Crear a partir de la selección",export:"📄 Exportar CSV",theme:"🌓 Cambiar tema",stats:"📊 Estadísticas de la playlist",share:"🔗 Compartir playlist",shareStats:"🔗 Compartir / Estadísticas playlist"},
+    fr: {login:"🔐 Connexion avec Spotify",playlist:"Nom de la playlist:",notLogged:"❌ Non connecté",logged:"Connexion réussie",findTracks:"🎯 Trouver les titres originaux",createSelection:"📥 Créer à partir de la sélection",export:"📄 Exporter CSV",theme:"🌓 Changer le thème",stats:"📊 Statistiques de la playlist",share:"🔗 Partager la playlist",shareStats:"🔗 Partager / Statistiques playlist"},
+    de: {login:"🔐 Mit Spotify anmelden",playlist:"Playlist-Name:",notLogged:"❌ Nicht angemeldet",logged:"Erfolgreich angemeldet",findTracks:"🎯 Originaltitel finden",createSelection:"📥 Aus Auswahl erstellen",export:"📄 CSV exportieren",theme:"🌓 Thema wechseln",stats:"📊 Playlist-Statistiken",share:"🔗 Playlist teilen",shareStats:"🔗 Teilen / Playlist-Statistiken"},
+    pt: {login:"🔐 Entrar com Spotify",playlist:"Nome da playlist:",notLogged:"❌ Não autenticado",logged:"Login realizado",findTracks:"🎯 Encontrar músicas originais",createSelection:"📥 Criar da seleção",export:"📄 Exportar CSV",theme:"🌓 Alternar tema",stats:"📊 Estatísticas da playlist",share:"🔗 Compartilhar playlist",shareStats:"🔗 Compartilhar / Estatísticas playlist"},
+    ru: {login:"🔐 Войти через Spotify",playlist:"Название плейлиста:",notLogged:"❌ Не авторизован",logged:"Вход выполнен",findTracks:"🎯 Найти оригинальные треки",createSelection:"📥 Создать из выбранного",export:"📄 Экспорт в CSV",theme:"🌓 Сменить тему",stats:"📊 Статистика плейлиста",share:"🔗 Поделиться плейлистом",shareStats:"🔗 Поделиться / Статистика плейлиста"}
   };
+  
   function setLang(lang) {
     document.getElementById("loginBtn").textContent = translations[lang].login;
     document.getElementById("playlistLabel").textContent = translations[lang].playlist;
@@ -459,13 +463,17 @@
     document.querySelector('button[onclick="exportCSV()"]').textContent = translations[lang].export;
     showRandomQuote();
   }
-  setLang('it');
-  document.getElementById("langSelect").value = "it";
+  setLang('en');
+  document.getElementById("langSelect").value = "en";
 
-  // Tema chiaro/scuro
+  // --- Theme toggle with persistent storage (Light/Dark) ---
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light') document.body.classList.add('light-theme');
   function toggleTheme() {
     document.body.classList.toggle('light-theme');
+    localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
   }
+  function toggleSidebar() { document.getElementById('sidebarSettings').classList.toggle('open'); }
 
   // Spotify PKCE Login
   const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
@@ -520,6 +528,7 @@
       .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
 
+  // --- Add more input fields for multiple playlist links ---
   function addPlaylistInput() {
     const div = document.getElementById('playlistInputs');
     const input = document.createElement('input');
@@ -555,7 +564,7 @@
   popMax.addEventListener('input', () => updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100));
   updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100);
 
-  // Mood/Energia slider JS evidenziato
+  // Mood/Energia slider JS
   const energyMin = document.getElementById('energyMin');
   const energyMax = document.getElementById('energyMax');
   const energyProgress = document.getElementById('energyProgress');
@@ -573,6 +582,7 @@
   energyMax.addEventListener('input', updateEnergySlider);
   updateEnergySlider();
   
+  // --- Mode toggles: Show manual creation button only in 'manual' mode ---
   function toggleAdvancedMode() {
     const mode = document.querySelector('input[name="mode"]:checked').value;
     document.getElementById("createManualPlaylist").style.display = (mode === "manual") ? "inline-block" : "none";
@@ -794,7 +804,8 @@
     html += '</ul>';
     document.getElementById('trackSelection').insertAdjacentHTML('beforeend', html);
   }
-  
+
+  // --- Rendering manual selection area, with automatic scroll ---
   function renderManualSelection(tracks) {
     const container = document.getElementById('trackSelection');
     container.innerHTML = "<h3>🎯 Seleziona i brani che vuoi includere</h3>";
@@ -874,7 +885,21 @@
     alert('✅ Playlist creata!');
   }
 
-  // Esporta CSV
+  // --- Export to Apple Music / YouTube Music (mock/info) ---
+  function exportAppleMusic() {
+    alert("To export to Apple Music, export your playlist as CSV/JSON and use a service like Soundiiz or FreeYourMusic.");
+  }
+  function exportYouTubeMusic() {
+    alert("To export to YouTube Music, export your playlist as CSV/JSON and use a service like Soundiiz or FreeYourMusic.");
+  }
+  function shareViaTelegram(url) {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}`, "_blank");
+  }
+  function shareViaWhatsapp(url) {
+    window.open(`https://wa.me/?text=${encodeURIComponent(url)}`, "_blank");
+  }
+  
+  // --- Export as CSV ---
   function exportCSV() {
     const selects = document.querySelectorAll('select');
     if (!selects.length) return alert('⛔ No selections found');
@@ -890,7 +915,7 @@
     a.click();
   }
 
-  // Esporta JSON
+  // --- Export as JSON ---
   function exportJSON() {
     const selects = document.querySelectorAll('select');
     if (!selects.length) return alert('⛔ No selections found');
@@ -906,6 +931,12 @@
     a.click();
   }
 
+  // --- Auto-focus on the first playlist link input on page load ---
+  window.onload = () => {
+    document.querySelector('.playlist-link')?.focus();
+  };
+
+  // --- Example: show playlist statistics (duration, popularity) ---
   function showStats(tracks) {
     if (!tracks.length) return;
     let totalDuration = 0, popSum = 0, artistCount = {};
