@@ -633,8 +633,10 @@
       popMax: document.getElementById('popMax').value,
       genres: Array.from(document.querySelectorAll('#genreList input:checked')).map(el => el.value),
       customGenres: document.getElementById('customGenres').value
+      customGenres: document.getElementById('customGenres').value,
       energyMin: document.getElementById('energyMin').value,
       energyMax: document.getElementById('energyMax').value
+
     };
     localStorage.setItem('playlistfinder_preset_'+name, JSON.stringify(preset));
     alert('Preset salvato!');
@@ -746,6 +748,11 @@
         if (energy < minEnergy || energy > maxEnergy) continue;
         filteredTracks.push(track);
       }
+      if (filteredTracks.length > 0) {
+      results.push(filteredTracks[0].uri);
+      manualTracks.push({ original: item.track.name, options: filteredTracks });
+}
+
     }
     if (document.querySelector('input[name="mode"]:checked').value === "manual") {
       renderManualSelection(manualTracks);
