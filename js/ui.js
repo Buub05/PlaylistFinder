@@ -1,8 +1,14 @@
-// Gestione UI generale
-function toggleTheme() {
-    document.body.classList.toggle("dark-mode");
+function createButton(id, label, onClick) {
+  const btn = document.createElement('button');
+  btn.id = id;
+  btn.textContent = label;
+  btn.addEventListener('click', onClick);
+  return btn;
 }
 
-function showSidebar(content) {
-    document.getElementById("sidebar").innerHTML = content;
+function updateStatus(message) {
+  const container = document.getElementById('controls');
+  container.textContent = message;
 }
+
+// Altre funzioni per la UI: mostra playlist, slider, etc.
