@@ -1,4 +1,570 @@
-// Mood/Energia slider JS
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlaylistFinder</title>
+  <!-- STYLE: Spotify-like dark by default, with light theme support -->
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      padding: 2rem;
+      text-align: center;
+      transition: background .4s, color .4s;
+    }
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 1.2rem;
+    }
+    input, select, button, textarea {
+      margin: 0.5rem;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background-color: #1db954;
+      color: #fff;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    button:hover {
+      background-color: #169443;
+    }
+    button.add-link {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.95rem;
+      margin-left: 0.3rem;
+    }
+    .inline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .slider-block {
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    details {
+      background: #1e1e1e;
+      border-radius: 10px;
+      margin-top: 1rem;
+      padding: 1rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+    summary {
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.3rem 1rem;
+      justify-items: start;
+      text-align: left;
+      margin: 1rem auto;
+      max-width: 400px;
+    }
+    #trackSelection {
+      margin-top: 2rem;
+      text-align: left;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .track-option {
+      background-color: #1e1e1e;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem auto;
+      max-width: 500px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: grab;
+    }
+    .range-slider {
+      position: relative;
+      width: 300px;
+      height: 40px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .range-slider input[type="range"] {
+      position: absolute;
+      width: 100%;
+      pointer-events: none;
+      -webkit-appearance: none;
+      height: 6px;
+      background: transparent;
+    }
+    .range-slider input[type="range"]:focus {
+      outline: none;
+    }
+    .range-slider input[type="range"]::-webkit-slider-thumb {
+      pointer-events: all;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1db954;
+      -webkit-appearance: none;
+      border: 2px solid #fff;
+      box-shadow: 0 0 2px #333;
+      transition: background .2s;
+    }
+    .range-slider input[type="range"]::-moz-range-thumb {
+      pointer-events: all;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1db954;
+      border: 2px solid #fff;
+      box-shadow: 0 0 2px #333;
+      transition: background .2s;
+    }
+    .range-slider-track {
+      position: absolute;
+      height: 6px;
+      background: #444;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      border-radius: 3px;
+    }
+    .range-slider-progress {
+      position: absolute;
+      height: 6px;
+      background: #1db954;
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 3px;
+    }
+    @media(max-width: 600px) {
+      input, select, button, textarea {
+        width: 100% !important;
+      }
+      .range-slider {
+        width: 100% !important;
+        min-width: 0;
+      }
+    }
+    body.light-theme {
+      background-color: #fafafa;
+      color: #222;
+    }
+    body.light-theme button { background-color: #222; color: #fafafa; }
+    body.light-theme details { background: #eee; color: #222; }
+    /* Sidebar */
+    #sidebarSettings {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 300px;
+      height: 100%;
+      background: #eaeaea;         /* grigio chiaro */
+      color: #222;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+      padding: 2rem 1.2rem;
+      transition: left .35s cubic-bezier(.4,.2,.4,1);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #sidebarSettings.open {
+      left: 0;
+    }
+    #sidebarSettings .close-btn {
+      align-self: flex-end;
+      background: none;
+      color: #fff;
+      font-size: 1.8rem;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    #settingsBtn {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      background: #1db954;
+      color: #fff;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 1.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1200;
+      border: none;
+      box-shadow: 0 0 6px rgba(0,0,0,0.14);
+    }
+    /* Progress Bar */
+    #progressBarContainer {
+      width: 80%;
+      background-color: #333;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 2rem auto 1rem auto;
+      display: none;
+      height: 24px;
+      position: relative;
+    }
+    #progressBar {
+      height: 100%;
+      background-color: #1db954;
+      width: 0%;
+      transition: width .3s;
+    }
+    #progressLabel {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.1rem;
+      line-height: 24px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    /* Extra (not requested but fun) */
+    .fun-quote {
+      margin-top: 2rem;
+      font-style: italic;
+      color: #57e3b7;
+      font-size: 1.1rem;
+      text-align: center;
+      animation: funin 1.4s;
+    }
+    @keyframes funin { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+  <!-- Drag&drop avanzato (SortableJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+  <!-- Settings button -->
+  <button id="settingsBtn" title="Impostazioni" onclick="toggleSidebar()">⚙️</button>
+  <!-- Sidebar -->
+  <div id="sidebarSettings">
+    <button class="close-btn" onclick="toggleSidebar()">✖️</button>
+    <h2>Impostazioni</h2>
+    <div>
+      <label for="langSelect"><span style="margin-right:6px;">🌐</span>Lingua:</label>
+      <select id="langSelect" onchange="setLang(this.value)">
+        <option value="it">🇮🇹 Italiano</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="pt">🇵🇹 Português</option>
+        <option value="ru">🇷🇺 Русский</option>
+      </select>
+    </div>
+    <div>
+      <button onclick="toggleTheme()">🌓 Cambia tema</button>
+    </div>
+    <hr>
+    <!-- Leaderboard -->
+    <div>
+      <button class="highlight" onclick="showLeaderboard()">Leaderboard</button>
+    </div>
+    <!-- Carica playlist locale -->
+    <div>
+      <button class="highlight" onclick="loadLocalPlaylistUI()">📂 Carica playlist locale</button>
+    </div>
+  </div>
+    <div>
+      <label>Citazione motivazionale:</label>
+      <div id="randomQuote"></div>
+    </div>
+  </div>
+
+  <h1>🎧 PlaylistFinder</h1>
+
+  <!-- Spotify Login Button -->
+  <button onclick="login()" id="loginBtn">🔐 Login with Spotify</button>
+  <span id="loginStatus" class="status-icon">❌ Non autenticato</span>
+
+  <!-- Playlist Name -->
+  <div style="margin: 1rem auto; max-width: 460px;">
+    <label for="playlistName" id="playlistLabel" style="font-weight:bold; font-size:1.13rem;">Nome playlist:</label>
+    <input type="text" id="playlistName" placeholder="Inserisci nome playlist..." value="" style="width: 100%; margin-top: 0.5rem; border: 1px solid #1db954;"/>
+  </div>
+
+  <!-- Multiple Playlist Links Input -->
+  <div class="inline" id="playlistInputs">
+    <input type="text" class="playlist-link" placeholder="Spotify playlist link" style="width: 70%;" />
+    <button type="button" class="add-link" onclick="addPlaylistInput()">➕</button>
+  </div>
+
+  <!-- Mode selector: Auto, Manual, Original, Filtered -->
+  <div style="margin-top: 1rem">
+    <label><input type="radio" name="mode" value="auto" checked> Auto</label>
+    <label><input type="radio" name="mode" value="manual"> Manual</label>
+    <label><input type="radio" name="mode" value="original"> Original</label>
+    <label><input type="radio" name="mode" value="filtered"> Filtered</label>
+  </div>
+
+  <!-- ADVANCED FILTERS! -->
+  <details>
+    <summary>🎚️ Advanced filters</summary>
+    <div class="inline">
+      <label>Exclude words: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
+      <label>Include words: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
+    </div>
+    <div class="slider-block">
+      <label>Duration (seconds): <span id="durationLabel"></span></label>
+      <div class="range-slider" id="durationSlider">
+        <div class="range-slider-track"></div>
+        <div class="range-slider-progress" id="durationProgress"></div>
+        <input type="range" id="durationMin" min="0" max="3600" value="0">
+        <input type="range" id="durationMax" min="0" max="3600" value="3600">
+      </div>
+    </div>
+    <div class="slider-block">
+      <label>Popularity: <span id="popularityLabel"></span></label>
+      <div class="range-slider" id="popularitySlider">
+        <div class="range-slider-track"></div>
+        <div class="range-slider-progress" id="popularityProgress"></div>
+        <input type="range" id="popMin" min="0" max="100" value="0">
+        <input type="range" id="popMax" min="0" max="100" value="100">
+      </div>
+    </div>
+    <div class="inline">
+      <label>Genres:</label>
+      <div class="genre-grid" id="genreList"></div>
+    </div>
+    </div>
+    <div class="inline">
+      <label>Other: <input type="text" id="customGenres" placeholder="funky, soul..." /></label>
+    </div>
+    <!-- Preset filtri -->
+    <div class="inline">
+      <button onclick="savePreset(prompt('Nome preset?'))">💾 Salva preset</button>
+      <button onclick="loadPreset(prompt('Preset da caricare?'))">📂 Carica preset</button>
+    </div>
+    <!-- Mood/Energia evidenziata -->
+    <div class="slider-block highlight">
+      <label>Mood/Energia: <span id="energyLabel"></span></label>
+      <div class="range-slider" id="energySlider">
+        <div class="range-slider-track"></div>
+        <div class="range-slider-progress" id="energyProgress"></div>
+        <input type="range" id="energyMin" min="0" max="1" step="0.01" value="0">
+        <input type="range" id="energyMax" min="0" max="1" step="0.01" value="1">
+      </div>
+    </div>
+  </details>
+
+  <!-- Main actions -->
+  <div style="margin-top: 2rem">
+    <button onclick="startProcessing()" title="Start analyzing the playlists">🎯 Find original tracks</button>
+    <button onclick="createManualPlaylist()" id="createManualPlaylist" style="display:none" title="Create playlist from selected tracks">📥 Create from selection</button>
+    <button onclick="exportCSV()" title="Export playlist as CSV">📄 Export CSV</button>
+    <button onclick="exportJSON()" title="Export playlist as JSON">🧾 Export JSON</button>
+    <button onclick="exportAppleMusic()" title="Export to Apple Music (see instructions)">🍏 Apple Music</button>
+    <button onclick="exportYouTubeMusic()" title="Export to YouTube Music (see instructions)">▶️ YouTube Music</button>
+  </div>
+
+  <!-- Progress bar for processes! -->
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
+    <span id="progressLabel"></span>
+  </div>
+
+  <!-- Manual selection area (shows up in manual mode) -->
+  <div id="trackSelection"></div>
+
+  <!-- Condividi/statistiche in fondo -->
+  <div style="margin-top:3rem;">
+    <button onclick="shareAndStatsUI()" id="shareStatsBtn">🔗 Condividi / Statistiche playlist</button>
+    <!-- Telegram e WhatsApp -->
+    <button class="highlight" onclick="shareViaTelegram(lastPlaylistUrl)">Telegram</button>
+    <button class="highlight" onclick="shareViaWhatsapp(lastPlaylistUrl)">WhatsApp</button>
+  </div>
+  
+  <!-- Fun quote -->
+  <div class="fun-quote" id="funQuote"></div>
+
+<script>
+  // ======= UI/UX/SETTINGS LOGIC =======
+  // --- Genres list (extended) ---
+  const genres = [
+    { id: "pop", name: "Pop" }, { id: "rock", name: "Rock" }, { id: "hip-hop", name: "Hip-Hop" },
+    { id: "classical", name: "Classical" }, { id: "acoustic", name: "Acoustic" }, { id: "piano", name: "Piano" },
+    { id: "instrumental", name: "Instrumental" }, { id: "edm", name: "EDM" }, { id: "indie", name: "Indie" },
+    { id: "trap", name: "Trap" }, { id: "jazz", name: "Jazz" }, { id: "funk", name: "Funk" },
+    { id: "soul", name: "Soul" }, { id: "metal", name: "Metal" }, { id: "reggae", name: "Reggae" },
+    { id: "rnb", name: "R&B" }, { id: "country", name: "Country" }, { id: "blues", name: "Blues" },
+    { id: "folk", name: "Folk" }, { id: "disco", name: "Disco" }, { id: "techno", name: "Techno" },
+    { id: "house", name: "House" }, { id: "dubstep", name: "Dubstep" }, { id: "ambient", name: "Ambient" },
+    { id: "k-pop", name: "K-Pop" }, { id: "latin", name: "Latin" }, { id: "funky", name: "Funky" },
+    { id: "electro", name: "Electro" }, { id: "drum-n-bass", name: "Drum & Bass" }, { id: "opera", name: "Opera" }
+  ];
+  document.addEventListener("DOMContentLoaded", () => {
+    const genreListDiv = document.getElementById('genreList');
+    genreListDiv.innerHTML = genres.map(g =>
+      `<label><input type="checkbox" value="${g.id}" /> ${g.name}</label>`
+    ).join('');
+  });
+  
+  // Sidebar menu logic
+  function toggleSidebar() {
+    document.getElementById('sidebarSettings').classList.toggle('open');
+  }
+
+  // Quotes
+  const quotes = [
+    "La musica è il linguaggio universale dell’umanità.",
+    "Un giorno senza musica è come un giorno senza sole.",
+    "Playlist = energia positiva!",
+    "Non fermarti mai: crea, ascolta, condividi.",
+    "La tua colonna sonora la scrivi tu."
+  ];
+  function showRandomQuote() {
+    document.getElementById("funQuote").textContent = quotes[Math.floor(Math.random()*quotes.length)];
+    document.getElementById("randomQuote").textContent = quotes[Math.floor(Math.random()*quotes.length)];
+  }
+  showRandomQuote();
+
+ // --- Translation object for UI multi-language support ---
+  const translations = {
+    it: {login:"🔐 Accedi con Spotify",playlist:"Nome playlist:",notLogged:"❌ Non autenticato",logged:"Login effettuato",findTracks:"🎯 Trova tracce originali",createSelection:"📥 Crea dalla selezione",export:"📄 Esporta CSV",theme:"🌓 Cambia tema",stats:"📊 Statistiche playlist",share:"🔗 Condividi playlist",shareStats:"🔗 Condividi / Statistiche playlist"},
+    en: {login:"🔐 Login with Spotify",playlist:"Playlist name:",notLogged:"❌ Not logged in",logged:"Login successful",findTracks:"🎯 Find original tracks",createSelection:"📥 Create from selection",export:"📄 Export CSV",theme:"🌓 Toggle theme",stats:"📊 Playlist stats",share:"🔗 Share playlist",shareStats:"🔗 Share / Stats playlist"},
+    es: {login:"🔐 Iniciar sesión con Spotify",playlist:"Nombre de la playlist:",notLogged:"❌ No conectado",logged:"Inicio de sesión correcto",findTracks:"🎯 Buscar canciones originales",createSelection:"📥 Crear a partir de la selección",export:"📄 Exportar CSV",theme:"🌓 Cambiar tema",stats:"📊 Estadísticas de la playlist",share:"🔗 Compartir playlist",shareStats:"🔗 Compartir / Estadísticas playlist"},
+    fr: {login:"🔐 Connexion avec Spotify",playlist:"Nom de la playlist:",notLogged:"❌ Non connecté",logged:"Connexion réussie",findTracks:"🎯 Trouver les titres originaux",createSelection:"📥 Créer à partir de la sélection",export:"📄 Exporter CSV",theme:"🌓 Changer le thème",stats:"📊 Statistiques de la playlist",share:"🔗 Partager la playlist",shareStats:"🔗 Partager / Statistiques playlist"},
+    de: {login:"🔐 Mit Spotify anmelden",playlist:"Playlist-Name:",notLogged:"❌ Nicht angemeldet",logged:"Erfolgreich angemeldet",findTracks:"🎯 Originaltitel finden",createSelection:"📥 Aus Auswahl erstellen",export:"📄 CSV exportieren",theme:"🌓 Thema wechseln",stats:"📊 Playlist-Statistiken",share:"🔗 Playlist teilen",shareStats:"🔗 Teilen / Playlist-Statistiken"},
+    pt: {login:"🔐 Entrar com Spotify",playlist:"Nome da playlist:",notLogged:"❌ Não autenticado",logged:"Login realizado",findTracks:"🎯 Encontrar músicas originais",createSelection:"📥 Criar da seleção",export:"📄 Exportar CSV",theme:"🌓 Alternar tema",stats:"📊 Estatísticas da playlist",share:"🔗 Compartilhar playlist",shareStats:"🔗 Compartilhar / Estatísticas playlist"},
+    ru: {login:"🔐 Войти через Spotify",playlist:"Название плейлиста:",notLogged:"❌ Не авторизован",logged:"Вход выполнен",findTracks:"🎯 Найти оригинальные треки",createSelection:"📥 Создать из выбранного",export:"📄 Экспорт в CSV",theme:"🌓 Сменить тему",stats:"📊 Статистика плейлиста",share:"🔗 Поделиться плейлистом",shareStats:"🔗 Поделиться / Статистика плейлиста"}
+  };
+  
+  function setLang(lang) {
+    document.getElementById("loginBtn").textContent = translations[lang].login;
+    document.getElementById("playlistLabel").textContent = translations[lang].playlist;
+    document.getElementById("loginStatus").textContent = translations[lang].notLogged;
+    document.querySelector('button[onclick="startProcessing()"]').textContent = translations[lang].findTracks;
+    document.getElementById("createManualPlaylist").textContent = translations[lang].createSelection;
+    document.querySelector('button[onclick="exportCSV()"]').textContent = translations[lang].export;
+    showRandomQuote();
+  }
+  setLang('en');
+  document.getElementById("langSelect").value = "en";
+
+  // --- Theme toggle with persistent storage (Light/Dark) ---
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light') document.body.classList.add('light-theme');
+  function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+  }
+  function toggleSidebar() { document.getElementById('sidebarSettings').classList.toggle('open'); }
+
+  // Spotify PKCE Login
+  const clientId = '162bcf77cc254ffaa8426ef1001c1f7f';
+  const redirectUri = 'https://buub05.github.io/PlaylistFinder/';
+  let codeVerifier = '';
+  let accessToken = '';
+  let lastPlaylistUrl = '';
+
+  async function login() {
+    codeVerifier = generateRandomString(128);
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    localStorage.setItem('code_verifier', codeVerifier);
+    const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=playlist-modify-public playlist-modify-private&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
+    window.location.href = authUrl;
+  }
+
+  async function handleRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (!code) return;
+    codeVerifier = localStorage.getItem('code_verifier');
+    const body = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+      client_id: clientId,
+      code_verifier: codeVerifier
+    });
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+    const data = await res.json();
+    accessToken = data.access_token;
+    if (accessToken) {
+      document.getElementById("loginStatus").textContent = translations[document.getElementById("langSelect").value].logged;
+      document.getElementById("loginStatus").style.color = "lightgreen";
+    }
+    window.history.replaceState({}, document.title, redirectUri);
+  }
+  handleRedirect();
+
+  function generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(x => chars[x % chars.length]).join('');
+  }
+  async function generateCodeChallenge(codeVerifier) {
+    const data = new TextEncoder().encode(codeVerifier);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  // --- Add more input fields for multiple playlist links ---
+  function addPlaylistInput() {
+    const div = document.getElementById('playlistInputs');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'playlist-link';
+    input.placeholder = 'Spotify playlist link';
+    input.style = 'width: 70%; margin-top: 0.4rem;';
+    div.insertBefore(input, div.lastElementChild);
+  }
+
+  function updateSlider(minEl, maxEl, progressEl, labelEl, maxRange) {
+    const min = parseInt(minEl.value);
+    const max = parseInt(maxEl.value);
+    if (min > max) minEl.value = max;
+    const percentMin = (min / maxRange) * 100;
+    const percentMax = (max / maxRange) * 100;
+    progressEl.style.left = percentMin + '%';
+    progressEl.style.right = (100 - percentMax) + '%';
+    labelEl.textContent = `${min} - ${max}`;
+  }
+  const durationMin = document.getElementById('durationMin');
+  const durationMax = document.getElementById('durationMax');
+  const durationProgress = document.getElementById('durationProgress');
+  const durationLabel = document.getElementById('durationLabel');
+  durationMin.addEventListener('input', () => updateSlider(durationMin, durationMax, durationProgress, durationLabel, 3600));
+  durationMax.addEventListener('input', () => updateSlider(durationMin, durationMax, durationProgress, durationLabel, 3600));
+  updateSlider(durationMin, durationMax, durationProgress, durationLabel, 3600);
+  const popMin = document.getElementById('popMin');
+  const popMax = document.getElementById('popMax');
+  const popularityProgress = document.getElementById('popularityProgress');
+  const popularityLabel = document.getElementById('popularityLabel');
+  popMin.addEventListener('input', () => updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100));
+  popMax.addEventListener('input', () => updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100));
+  updateSlider(popMin, popMax, popularityProgress, popularityLabel, 100);
+
+  // Mood/Energia slider JS
   const energyMin = document.getElementById('energyMin');
   const energyMax = document.getElementById('energyMax');
   const energyProgress = document.getElementById('energyProgress');
