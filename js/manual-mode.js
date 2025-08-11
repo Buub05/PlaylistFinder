@@ -1,4 +1,10 @@
-// Modalità manuale
 function enableManualMode() {
-    console.log("Modalità manuale attivata");
+  const manualContainer = document.getElementById('manual-container');
+  manualContainer.style.display = 'block';
+  // Altre funzioni per interazione manuale
+}
+
+function disableManualMode() {
+  const manualContainer = document.getElementById('manual-container');
+  manualContainer.style.display = 'none';
 }
