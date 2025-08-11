@@ -1,11 +1,4 @@
-/* Stili generali e tema */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-}
-
+/* Tema chiaro/scuro e stile base */
 :root {
     --bg-color: #ffffff;
     --text-color: #000000;
@@ -14,4 +7,20 @@ body {
 body.dark-mode {
     --bg-color: #121212;
     --text-color: #ffffff;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+h1, h2, h3 {
+    font-weight: 600;
+}
+
+a {
+    color: #1db954;
+    text-decoration: none;
 }
