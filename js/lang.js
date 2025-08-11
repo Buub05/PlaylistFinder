@@ -1,19 +1,13 @@
-// Traduzioni e gestione lingua
-const translations = {
-    it: {
-        login: "Accedi con Spotify",
-        logout: "Esci",
-        processing: "Elaborazione playlist..."
-    },
-    en: {
-        login: "Login with Spotify",
-        logout: "Logout",
-        processing: "Processing playlists..."
-    }
+const LANG_IT = {
+  welcome: "Benvenuto in Playlist Finder",
+  loading: "Caricamento in corso...",
+  error: "Errore, riprova.",
+  loginPrompt: "Accedi con Spotify per continuare.",
+  // altri messaggi
 };
 
-let currentLang = "it";
+let CURRENT_LANG = LANG_IT;
 
 function t(key) {
-    return translations[currentLang][key] || key;
+  return CURRENT_LANG[key] || key;
 }
