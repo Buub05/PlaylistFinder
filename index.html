@@ -1,188 +1,31 @@
-<!-- ===========================
-     FILE: index.html
-     Struttura base HTML per PlaylistFinder
-     =========================== -->
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <!-- Garantisce il corretto scaling su dispositivi mobili -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PlaylistFinder</title>
-
-    <!-- MOD: CSS separato per ordine e leggibilità -->
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Libreria per il drag&drop avanzato -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist Finder</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/sliders.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/components.css">
 </head>
-
-<body>
-    <!-- Pulsante per aprire le impostazioni -->
-    <button id="settingsBtn" title="Impostazioni">⚙️</button>
-
-    <!-- Sidebar impostazioni -->
-    <div id="sidebarSettings">
-        <!-- Pulsante di chiusura -->
-        <button class="close-btn">✖️</button>
-        <h2>Impostazioni</h2>
-
-        <!-- Selezione lingua -->
-        <div>
-            <label for="langSelect"><span style="margin-right:6px;">🌐</span>Lingua:</label>
-            <select id="langSelect">
-                <option value="it">🇮🇹 Italiano</option>
-                <option value="en">🇬🇧 English</option>
-                <option value="es">🇪🇸 Español</option>
-                <option value="fr">🇫🇷 Français</option>
-                <option value="de">🇩🇪 Deutsch</option>
-                <option value="pt">🇵🇹 Português</option>
-                <option value="ru">🇷🇺 Русский</option>
-            </select>
-        </div>
-
-        <!-- Cambio tema -->
-        <div>
-            <button id="themeToggle">🌓 Cambia tema</button>
-        </div>
-
-        <hr>
-
-        <!-- Leaderboard -->
-        <div>
-            <button id="leaderboardBtn">Leaderboard</button>
-        </div>
-
-        <!-- Carica playlist locale -->
-        <div>
-            <button id="loadLocalBtn">📂 Carica playlist locale</button>
-        </div>
-
-        <!-- Citazione motivazionale -->
-        <div>
-            <label>Citazione motivazionale:</label>
-            <div id="randomQuote"></div>
-        </div>
-    </div>
-
-    <!-- Titolo principale -->
-    <h1>🎧 PlaylistFinder</h1>
-
-    <!-- Login Spotify -->
-    <button id="loginBtn">🔐 Login with Spotify</button>
-    <span id="loginStatus" class="status-icon">❌ Non autenticato</span>
-
-    <!-- Nome playlist -->
-    <div class="playlist-name-container">
-        <label for="playlistName" id="playlistLabel">Nome playlist:</label>
-        <input type="text" id="playlistName" placeholder="Inserisci nome playlist...">
-    </div>
-
-    <!-- Input per link playlist multipli -->
-    <div class="inline" id="playlistInputs">
-        <input type="text" class="playlist-link" placeholder="Spotify playlist link" />
-        <button type="button" class="add-link">➕</button>
-    </div>
-
-    <!-- Modalità -->
-    <div class="mode-selector">
-        <label><input type="radio" name="mode" value="auto" checked> Auto</label>
-        <label><input type="radio" name="mode" value="manual"> Manual</label>
-        <label><input type="radio" name="mode" value="original"> Original</label>
-        <label><input type="radio" name="mode" value="filtered"> Filtered</label>
-    </div>
-
-    <!-- Filtri avanzati -->
-    <details>
-        <summary>🎚️ Advanced filters</summary>
-        <!-- Inclusione/esclusione parole -->
-        <div class="inline">
-            <label>Exclude words: <input type="text" id="excludeKeywords" placeholder="remix, live..." /></label>
-            <label>Include words: <input type="text" id="includeKeywords" placeholder="acoustic, piano..." /></label>
-        </div>
-
-        <!-- Slider durata -->
-        <div class="slider-block">
-            <label>Duration (seconds): <span id="durationLabel"></span></label>
-            <div class="range-slider" id="durationSlider">
-                <div class="range-slider-track"></div>
-                <div class="range-slider-progress" id="durationProgress"></div>
-                <input type="range" id="durationMin" min="0" max="3600" value="0">
-                <input type="range" id="durationMax" min="0" max="3600" value="3600">
-            </div>
-        </div>
-
-        <!-- Slider popolarità -->
-        <div class="slider-block">
-            <label>Popularity: <span id="popularityLabel"></span></label>
-            <div class="range-slider" id="popularitySlider">
-                <div class="range-slider-track"></div>
-                <div class="range-slider-progress" id="popularityProgress"></div>
-                <input type="range" id="popMin" min="0" max="100" value="0">
-                <input type="range" id="popMax" min="0" max="100" value="100">
-            </div>
-        </div>
-
-        <!-- Generi -->
-        <div class="inline">
-            <label>Genres:</label>
-            <div class="genre-grid" id="genreList"></div>
-        </div>
-
-        <!-- Generi custom -->
-        <div class="inline">
-            <label>Other: <input type="text" id="customGenres" placeholder="funky, soul..." /></label>
-        </div>
-
-        <!-- Preset -->
-        <div class="inline">
-            <button id="savePresetBtn">💾 Salva preset</button>
-            <button id="loadPresetBtn">📂 Carica preset</button>
-        </div>
-
-        <!-- Slider energia -->
-        <div class="slider-block highlight">
-            <label>Mood/Energia: <span id="energyLabel"></span></label>
-            <div class="range-slider" id="energySlider">
-                <div class="range-slider-track"></div>
-                <div class="range-slider-progress" id="energyProgress"></div>
-                <input type="range" id="energyMin" min="0" max="1" step="0.01" value="0">
-                <input type="range" id="energyMax" min="0" max="1" step="0.01" value="1">
-            </div>
-        </div>
-    </details>
-
-    <!-- Azioni principali -->
-    <div class="main-actions">
-        <button id="startProcessingBtn">🎯 Find original tracks</button>
-        <button id="createManualPlaylist" style="display:none">📥 Create from selection</button>
-        <button id="exportCSVBtn">📄 Export CSV</button>
-        <button id="exportJSONBtn">🧾 Export JSON</button>
-        <button id="exportAppleMusicBtn">🍏 Apple Music</button>
-        <button id="exportYouTubeMusicBtn">▶️ YouTube Music</button>
-    </div>
-
-    <!-- Barra progresso -->
-    <div id="progressBarContainer">
-        <div id="progressBar"></div>
-        <span id="progressLabel"></span>
-    </div>
-
-    <!-- Area selezione manuale -->
-    <div id="trackSelection"></div>
-
-    <!-- Condivisione -->
-    <div class="share-buttons">
-        <button id="shareStatsBtn">🔗 Condividi / Statistiche playlist</button>
-        <button id="shareTelegramBtn">Telegram</button>
-        <button id="shareWhatsappBtn">WhatsApp</button>
-    </div>
-
-    <!-- Citazione divertente -->
-    <div class="fun-quote" id="funQuote"></div>
-
-    <!-- MOD: JS esterno -->
-    <script src="ui.js"></script>
+<body class="light-mode">
+    <div id="sidebar" class="sidebar"></div>
+    <main>
+        <h1>Playlist Finder</h1>
+        <section id="controls"></section>
+        <section id="playlist-container"></section>
+        <section id="manual-container"></section>
+    </main>
+    <script src="vendor/sortable.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/sliders.js"></script>
+    <script src="js/spotify-auth.js"></script>
+    <script src="js/playlist-processing.js"></script>
+    <script src="js/manual-mode.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
