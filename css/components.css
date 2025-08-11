@@ -10,3 +10,11 @@ button {
 button:hover {
     background: #17a846;
 }
+
+.btn-secondary {
+    background: #444;
+    color: white;
+}
+.btn-secondary:hover {
+    background: #333;
+}
